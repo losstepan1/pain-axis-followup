@@ -208,6 +208,10 @@ def story(S, author):
           "another named AI in the transcript."),
         P("Code, stimuli, per-item projections, the frozen preregistration and a log of every deviation are available "
           "on request. Pain-axis repository commit 7c25650.", "caption"),
+        P("Methods note: the pipeline was built and run with Claude Code (Anthropic's AI coding agent). This covers "
+          "reconnaissance of the paper's repository, the scripts, the preregistration draft, the simulations, the "
+          "analyses and a first draft of this note. The author made or approved every design decision at each "
+          "checkpoint, and the forward passes ran on a free Google Colab T4.", "caption"),
     ]
     return out
 
