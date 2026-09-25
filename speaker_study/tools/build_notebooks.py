@@ -154,6 +154,88 @@ files.download(zip_path)
     return cells
 
 
+FROZEN = ["pa_common.py", "02_build_stimuli.py", "03_run_conditions.py", "04_analyze.py"]
+
+
+def _sha(path):
+    import hashlib
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def phase3():
+    expected = {name: _sha(SCRIPTS / name) for name in FROZEN}
+    stim_sha = _sha(ROOT / "stimuli" / "stimuli.jsonl")
+    run_model = lambda repo: f"""
+%cd /content/speaker_study_scripts
+!python 03_run_conditions.py --pain-axis-dir /content/Pain-axis --stimuli "{{OUT_ROOT}}/stimuli/stimuli.jsonl" --out-root "{{OUT_ROOT}}" --model-repo {repo} --dtype bf16
+import glob
+run = sorted(glob.glob(f"{{OUT_ROOT}}/results/{MODEL_NAMES[repo]}/phase3_*"))[-1]
+print("analysing", run)
+!python 04_analyze.py --items "{{run}}/items.csv"
+"""
+    cells = [
+        md("""
+# Speaker study, Phase 3 + 4: label-swap experiment (Qwen 2.5 7B primary, Gemma 2 2B secondary)
+
+Runs all 1,260 stimuli (420 transcripts x final label `[Assistant]:` / `[User]:` / `[Moderator]:`)
+through **Qwen 2.5 7B base** (layer 8, first 9 blocks, bf16), then **Gemma 2 2B base** (layer 7),
+and runs the preregistered analysis on each.
+
+**Integrity check:** before any forward pass, the notebook verifies that the scripts it writes and the
+rebuilt stimuli match the SHA-256 hashes frozen in `PREREGISTRATION.md`. If the check fails, stop and
+tell Claude; do not edit the cells.
+
+**How to run:** T4 GPU runtime, then Runtime -> Run all. About 45-60 min. If the runtime disconnects
+after Qwen has finished, rerun the setup cells (1-4 and the script cells), the integrity cell and the
+Gemma cell. New runs never overwrite earlier ones. The last cell downloads `speaker_study_phase3.zip`
+(also saved to `MyDrive/speaker_study/`); attach it in the Claude session.
+"""),
+        *SETUP,
+        *[writefile(n) for n in FROZEN],
+        code(f"""
+# Integrity check against the preregistration (normalizes the trailing newline written by %%writefile).
+import hashlib
+EXPECTED = {json.dumps(expected, indent=1)}
+for name, sha in EXPECTED.items():
+    text = open(f"/content/speaker_study_scripts/{{name}}").read()
+    got = hashlib.sha256((text.rstrip("\\n") + "\\n").encode()).hexdigest()
+    assert got == sha, f"{{name}}: hash mismatch; do not run, tell Claude"
+    print("ok", name, sha[:12])
+"""),
+        code(f"""
+# Stimuli: rebuild from the paper's dataset (or confirm the copy on Drive) and check the frozen hash.
+%cd /content/speaker_study_scripts
+!python 02_build_stimuli.py --pain-axis-dir /content/Pain-axis --out-dir "{{OUT_ROOT}}/stimuli"
+import hashlib
+got = hashlib.sha256(open(f"{{OUT_ROOT}}/stimuli/stimuli.jsonl", "rb").read()).hexdigest()
+assert got == "{stim_sha}", "stimuli.jsonl hash mismatch; do not run, tell Claude"
+print("ok stimuli.jsonl", got[:12])
+"""),
+        code("# Phase 3 + 4, PRIMARY model: Qwen 2.5 7B base\n" + run_model("Qwen/Qwen2.5-7B").strip("\n")),
+        code("# Phase 3 + 4, secondary model: Gemma 2 2B base\n" + run_model("google/gemma-2-2b").strip("\n")),
+        code("""
+# Bundle the latest Phase 3 run of each model (items, run info, analysis, figures) for Claude.
+import glob, os, zipfile
+paths = []
+for model in ["Qwen_2.5_7B_base", "Gemma_2_2B_base"]:
+    runs = sorted(glob.glob(f"{OUT_ROOT}/results/{model}/phase3_*"))
+    if runs:
+        paths += [p for p in glob.glob(runs[-1] + "/**", recursive=True) if os.path.isfile(p)]
+zip_path = f"{OUT_ROOT}/speaker_study_phase3.zip"
+with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
+    for p in paths:
+        z.write(p, os.path.relpath(p, OUT_ROOT))
+print("\\n".join(os.path.relpath(p, OUT_ROOT) for p in paths))
+from google.colab import files
+files.download(zip_path)
+"""),
+    ]
+    return cells
+
+
+MODEL_NAMES = {"Qwen/Qwen2.5-7B": "Qwen_2.5_7B_base", "google/gemma-2-2b": "Gemma_2_2B_base"}
+
+
 def write_nb(path, cells):
     nb = {"cells": cells, "metadata": {"accelerator": "GPU", "colab": {"provenance": [], "gpuType": "T4"},
                                        "kernelspec": {"name": "python3", "display_name": "Python 3"},
@@ -167,3 +249,4 @@ def write_nb(path, cells):
 if __name__ == "__main__":
     write_nb(NB_DIR / "phase1_reproduce_gemma2b.ipynb", phase1())
     write_nb(NB_DIR / "phase1_qwen7b_phase2_tokens.ipynb", phase1_qwen_and_token_checks())
+    write_nb(NB_DIR / "phase3_run_and_analyze.ipynb", phase3())

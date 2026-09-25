@@ -17,7 +17,7 @@ Category-level inference (category_level): the same three contrasts on the 21 ca
 means, with exact permutation tests over category labels and Welch t intervals. Valid
 if the label effect varies by category; the item-level tests above are not (see
 tools/simulate_validation.py). Both verdicts are computed; PREREGISTRATION.md fixes
-which one is confirmatory.
+how they combine (co-primary, conjunctive: see combine()).
 
 Primary outcome: proj_pain (paper's pain axis, mean of S1 and S2 z with fixed
 assistant_next statistics), condition user_next. The verdict rule is in classify().
@@ -182,6 +182,27 @@ def classify(I_est, I_p, I_ci90, harm_est, harm_sig, suffer_est, suffer_sig, ses
     return "inconclusive", "No reliable interaction, and equivalence to zero not established."
 
 
+HSPEAKER_DIRECTION = ("crossover", "partial_suffer_only", "partial_harm_only", "interaction_only")
+
+
+def combine(v_cat, v_item):
+    """Co-primary verdict (conjunctive): a claim is made only as far as both inference levels support it.
+
+    Same verdict -> that verdict. Both in the H-speaker direction -> the strongest verdict both
+    support (crossover only if both say crossover; a partial verdict only if both allow it;
+    otherwise 'interaction_only'). Anything else -> 'discordant' (no confirmatory claim).
+    """
+    a, b = v_cat[0], v_item[0]
+    if a == b:
+        return v_cat
+    if a in HSPEAKER_DIRECTION and b in HSPEAKER_DIRECTION:
+        for partial in ("partial_suffer_only", "partial_harm_only"):
+            if {a, b} <= {"crossover", partial}:
+                return partial, f"Both levels support at least '{partial}' (category: {a}; item: {b})."
+        return "interaction_only", f"Both levels show an interaction in the H-speaker direction (category: {a}; item: {b})."
+    return "discordant", f"Category level: {a}; item level: {b}. No confirmatory claim."
+
+
 # ---------------------------------------------------------------- figures --------
 def _style(ax):
     ax.set_facecolor(SURFACE)
@@ -334,6 +355,7 @@ def analyze(df, n_boot, n_perm, seed, sesoi):
                     res["delta_harm"]["est"], not (res["delta_harm"]["ci95"][0] <= 0 <= res["delta_harm"]["ci95"][1]),
                     res["delta_suffer"]["est"], not (res["delta_suffer"]["ci95"][0] <= 0 <= res["delta_suffer"]["ci95"][1]),
                     sesoi)
+                entry["verdict_coprimary"] = combine(entry["verdict_category"], entry["verdict_item"])
             summary["contrasts"][f"{col}|{cond}"] = entry
             for k, v in res.items():
                 contrast_rows.append({"outcome": col, "role": role, "condition": cond, "stat": k, "est": v["est"],
@@ -379,7 +401,8 @@ def report(summary, model, sesoi):
         p = summary["contrasts"][f"{PRIMARY}|{cond}"]
         c = p["category_level"]
         lines += [f"## Pain axis, {COND_LABEL[cond]} vs [Assistant]:", "",
-                  f"- **Category-level verdict: {p['verdict_category'][0]}.** {p['verdict_category'][1]}",
+                  f"- **Co-primary verdict (both levels must agree): {p['verdict_coprimary'][0]}.** {p['verdict_coprimary'][1]}",
+                  f"- Category-level verdict: {p['verdict_category'][0]}. {p['verdict_category'][1]}",
                   f"- Item-level verdict: {p['verdict_item'][0]}. {p['verdict_item'][1]}", "",
                   "| statistic | item level: est [95% bootstrap CI] | item perm p | category level: est [95% Welch CI] | exact p |",
                   "|---|---|---|---|---|",

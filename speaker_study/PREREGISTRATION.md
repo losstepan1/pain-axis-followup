@@ -1,6 +1,9 @@
-# Preregistration (DRAFT, not yet frozen)
+# Preregistration
 
-> **Status: draft for the user's review at Checkpoint 2.** On approval, this file is renamed to `PREREGISTRATION.md` with the file hashes in section 9 recomputed. It is not edited after that, and any later change goes in `DEVIATIONS.md`. No swapped-label stimulus has been passed through any model.
+> **Frozen 2026-09-25**, before any swapped-label stimulus was passed through any model. This file is not edited after this point, and any later change goes in `DEVIATIONS.md`. The user's decisions at Checkpoint 2:
+> - **D1:** item-level and category-level inference are both run, as co-primary analyses with a conjunctive rule.
+> - **D2:** no change requested, so the proposed SESOI of ±0.25 z stands.
+> - **D3:** Llama 3.1 8B and Gemma 2 9B are preregistered as Phase 5 replications.
 
 **Study.** Does the "pain axis" track the model, or whoever speaks next? A follow-up to Tagliabue, Dung & Berg (2026), *The Pain Axis* (arXiv:2609.16247), Section 4.1.
 
@@ -42,9 +45,13 @@ Verified before any run (`stimuli/token_check_*.json`):
   - Reproduction passed: r = 1.0000, mean |diff| = 0.004 z.
   - Analyzed identically and reported as not confirmatory.
   - Caveat: in this model, user suffering is not below neutral at baseline.
-- **Replications (Phase 5, if run):** Llama 3.1 8B base and Gemma 2 9B base.
-  - Same analysis, each only after passing the same reproduction gate.
-  - Reported per model, not pooled into the confirmatory test.
+- **Replications (Phase 5): Llama 3.1 8B base** (`meta-llama/Llama-3.1-8B`, layer 12 of 32) **and Gemma 2 9B base** (`google/gemma-2-9b`, layer 12 of 42). Each model:
+  - uses its 4.1 steering layer from `steer_layers_S1.json` and the matching shipped vector file;
+  - runs truncated to layer + 1 blocks in bf16 on a T4;
+  - must pass the reproduction gate below and the Phase 2 token checks before its Phase 3 run;
+  - gets the identical analysis (section 5).
+
+  If `[User]:` and `[Assistant]:` differ in token count for a model, this is reported, and that model's result is flagged as confounded by tokenization. Results are reported per model with the sign and CI of I, and are not pooled into the confirmatory test. A replication counts as consistent with the primary result if its co-primary verdict falls in the same class.
 
 **Reproduction pass criterion (applied to every model):** 21 category means of the pain axis correlate with the shipped values at r ≥ 0.95, with mean absolute difference ≤ 0.10 z.
 
@@ -76,7 +83,14 @@ Groups follow the repo's strata:
 
 All 420 items are included. There are no exclusions or outlier rules.
 
-**Confirmatory inference: category level (recommended; decision D1 below).** The unit of analysis is the category mean of `d` (21 categories).
+**Confirmatory inference: co-primary, item level and category level (decision D1).** Both analyses below are run on the primary contrast. Each yields a verdict under the rule in the table further down, and the confirmatory claim is the **conjunction** of the two, computed by `combine()` in `04_analyze.py`:
+- If both verdicts are the same, that is the verdict.
+- If both indicate an interaction in the H-speaker direction, the verdict is the strongest one both support: crossover only if both say crossover, a given partial verdict only if both allow it, and otherwise "interaction in the H-speaker direction".
+- Otherwise the verdict is **discordant**, and no confirmatory claim is made.
+
+Because a claim needs both analyses, it can be no more liberal than either one. A discordant result is itself informative. In the simulations it arises mainly when the label effect varies by category.
+
+**Category-level analysis.** The unit of analysis is the category mean of `d` (21 categories).
 - **Tests:** exact two-sided permutation tests over category labels.
   - I: 11 vs 5 categories, all 4,368 splits.
   - Δ_harm: 11 vs 5 categories, 4,368 splits.
@@ -84,7 +98,7 @@ All 420 items are included. There are no exclusions or outlier rules.
 - **Intervals:** Welch t intervals, 95%, plus 90% for I.
 - **α** = 0.05, two-sided. I is the single confirmatory test, so no multiplicity correction is applied.
 
-**Equivalence (TOST).** SESOI = ±0.25 pain-axis z (decision D2). Equivalence holds if the 90% CI of I lies within ±0.25.
+**Equivalence (TOST).** SESOI = ±0.25 pain-axis z (decision D2). At each level, the 90% CI is the one that level uses: bootstrap for item level, Welch for category level. Equivalence holds if the 90% CI of I lies within ±0.25.
 - For scale: if Qwen's groups fully swapped levels under `user_next`, I would be ≈ 2 × 1.06 = 2.1 z. The SESOI is about 12% of that, and about a quarter of the 1.06 z harm-vs-suffering gap at baseline.
 
 **Verdict rule (applied to the primary contrast):**
@@ -102,14 +116,13 @@ All 420 items are included. There are no exclusions or outlier rules.
 
 The neutral mean `mean(d | neutral)` is the pure label effect. It is reported, but it is not evidence for either hypothesis.
 
-**Also reported (the spec's item-level analysis, secondary):**
-- Stratified bootstrap: scenarios resampled within category, 10,000 resamples, seed 0, percentile CIs.
-- Item-level permutation test on I: group labels of the d_i shuffled, 10,000 permutations, seed 0.
-- The same verdict rule applied to these statistics.
+**Item-level analysis (the spec's analysis).**
+- Stratified bootstrap: scenarios resampled within category, 10,000 resamples, seed 0, percentile 95% CIs, plus the 90% CI of I.
+- Item-level permutation test on I: group labels of the d_i shuffled, 10,000 permutations, seed 0, two-sided p = (1 + #{|I_perm| ≥ |I_obs|}) / (1 + n).
+- Component reliability: a 95% CI that excludes 0.
+- Conditional on the 21 specific categories: it generalizes to new items from these categories, not to new kinds of harm or suffering.
 
-These are conditional on the 21 specific categories. They are valid for generalizing to new items from these categories, not to new kinds of harm or suffering.
-
-### Why category level (decision D1)
+### Why both levels (decision D1)
 
 The spec prescribes item-level tests. Simulations on Qwen's real Assistant-next data (`tools/simulate_validation.py` → `validation/simulation_qwen_sigma0.3.json`; 100 replicates per scenario, item noise SD 0.3 z) show the following:
 
@@ -123,6 +136,18 @@ The spec prescribes item-level tests. Simulations on Qwen's real Assistant-next 
 | strong H-speaker (2.11) | 100% | 100% | 95% | 95% |
 
 If the label effect varies by category (per-category SD τ), the item-level tests treat that variation as signal. This is likely, because categories differ in content, length and number of turns. Category-level inference keeps its nominal error rate and loses little power.
+
+Co-primary verdicts over the same scenarios (`validation/simulation_qwen_sigma0.3_coprimary.json`):
+
+| scenario | H-speaker-direction verdict | equivalent/parallel | discordant | other |
+|---|---|---|---|---|
+| null, τ = 0 | 0% | 93% | 3% | 4% trivial |
+| null, τ = 0.15 | 1% | 47% | 50% | 2% |
+| null, τ = 0.30 | 0% | 4% | 93% | 3% reverse |
+| weak H-speaker, τ = 0.15 | 91% | 1% | 8% | 0% |
+| suffering-only, τ = 0.15 | 87% | 0% | 13% | 0% |
+| strong H-speaker | 100% | 0% | 0% | 0% |
+| small I = 0.10 (inside SESOI) | 0% | 4% | 3% | 93% trivial |
 
 ## 6. Secondary analyses (no confirmatory claims)
 
@@ -149,22 +174,17 @@ If the label effect varies by category (per-category SD τ), the item-level test
 ## 9. Frozen materials
 
 - Pain-axis repository: commit `7c256502ed3d98e4e6379290fe7db2f93cb8d025`.
-- SHA-256 of this draft's versions (recomputed at freeze):
+- SHA-256 of the frozen files (the Phase 3 notebook checks these before running):
 
 ```
 3dc05ab285fd72516f3cc106dcbeae37c02b1fd789735b32c6fd4de1e9b90e7b  scripts/pa_common.py
 16b1a724c8d0495aefee62de4f0d7247ac0963fc90dc53735a12053511aeeb13  scripts/02_build_stimuli.py
 a745b71b2193d85bfa2458f5ac33cb0a7eccc99fcb4a0014555bd2a81b8e3905  scripts/03_run_conditions.py
-51bcf6842da6bfffb680263df4cbab37c7aa0e8d2c3df0bf471ae960dafbadc6  scripts/04_analyze.py
+681ab37b130a35e7c67da649d34b1961b5966cbf1f49aaa9c5dc508a9fdab3b3  scripts/04_analyze.py
 9d3b84ca8e32e20d07fea37a2884119739833abe711b0c242e039ed76b03d209  stimuli/stimuli.jsonl
+6f4c58c2cc354fba447913fcc1004825d9af0bb03b27fe0468944b36a47fc7d1  tools/simulate_validation.py
 ```
 
 Run settings:
 - Seed 0, bf16, default attention (sdpa).
 - transformers 5.16.1, torch 2.11.0 (Colab T4). Full package list in `env.txt`.
-
-## Decisions for the user before freezing
-
-- **D1: confirmatory inference level.** Category level (recommended, section 5) or the spec's item level.
-- **D2: SESOI.** ±0.25 pain-axis z (proposed), or another value.
-- **D3: Phase 5.** Whether to preregister Llama 3.1 8B (gated: requires accepting Meta's license on Hugging Face) and Gemma 2 9B as replications now.

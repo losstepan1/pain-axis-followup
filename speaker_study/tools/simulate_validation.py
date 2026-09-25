@@ -76,12 +76,13 @@ def main():
                "sigma": args.sigma, "label_shift": 0.3, "reps": args.reps, "scenarios": []}
     for name, eff, tau in scenarios:
         true_I = eff["user_suffering"] - eff["harm_to_model"]
-        v_cat, v_item, p_item, p_cat, cover_item, cover_cat = [], [], [], [], [], []
+        v_co, v_cat, v_item, p_item, p_cat, cover_item, cover_cat = [], [], [], [], [], [], []
         for r in range(args.reps):
             df = simulate(base, eff, tau, args.sigma, 0.3, rng)
             summ, *_ = A.analyze(df, args.n_boot, args.n_perm, args.seed + r, args.sesoi)
             e = summ["contrasts"]["proj_pain|user_next"]
             c = e["category_level"]["I"]
+            v_co.append(e["verdict_coprimary"][0])
             v_cat.append(e["verdict_category"][0])
             v_item.append(e["verdict_item"][0])
             p_item.append(e["I"]["p_perm_two_sided"] < 0.05)
@@ -92,6 +93,7 @@ def main():
                "reject_item_perm": float(np.mean(p_item)), "reject_category_exact": float(np.mean(p_cat)),
                "coverage_item_bootstrap_ci95": float(np.mean(cover_item)),
                "coverage_category_welch_ci95": float(np.mean(cover_cat)),
+               "verdicts_coprimary": pd.Series(v_co).value_counts(normalize=True).round(3).to_dict(),
                "verdicts_category": pd.Series(v_cat).value_counts(normalize=True).round(3).to_dict(),
                "verdicts_item": pd.Series(v_item).value_counts(normalize=True).round(3).to_dict()}
         results["scenarios"].append(row)
