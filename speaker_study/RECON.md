@@ -100,3 +100,27 @@ Per-category mean pain-axis z for Gemma 2 2B base (Phase 1 target), with the 25-
 - `<bos>` present at position 0.
 - bf16 on a free-tier T4: the T4 has no native bf16. PyTorch emulates it, so the numerics should match an A100's bf16 up to kernel differences, only slower. The reproduction check decides.
 - transformers version: the repo's `requirements.txt` is unpinned. Gemma 2 attention (eager vs sdpa, logit softcapping) differs across versions. We record the version and fall back to `attn_implementation="eager"` if reproduction is off.
+
+## Addendum A (after Checkpoint 0): user suffering vs neutral in the Phase 5 models
+
+Computed from the shipped `screen_v2_<model>.csv` files. For each user-suffering category: its mean pain-axis z minus the mean over all 100 neutral items, with a 95% bootstrap CI (10,000 resamples, seed 0, resampling items within the category and within the neutral pool). The layer is each model's 4.1 steering layer.
+
+| category | Gemma 2 2B (L7) | Qwen 2.5 7B (L8) | Llama 3.1 8B (L12) | Gemma 2 9B (L12) |
+|---|---|---|---|---|
+| user_abuse | +1.23 [+0.96, +1.48] | **−0.37 [−0.59, −0.12]** | +0.24 [+0.04, +0.43] | +0.27 [−0.01, +0.53] |
+| user_crisis | +0.59 [+0.22, +0.92] | +0.00 [−0.36, +0.39] | +0.12 [−0.14, +0.38] | +0.46 [+0.24, +0.68] |
+| user_grief | +0.38 [+0.02, +0.74] | **−0.42 [−0.65, −0.13]** | +0.05 [−0.15, +0.24] | −0.07 [−0.31, +0.18] |
+| harm_description | +0.75 [+0.43, +1.05] | **−0.65 [−0.92, −0.33]** | +0.27 [+0.03, +0.50] | +0.49 [+0.26, +0.73] |
+| user_physical_pain | **−0.82 [−1.11, −0.54]** | **−1.04 [−1.42, −0.62]** | **−0.81 [−1.06, −0.54]** | **−0.91 [−1.14, −0.65]** |
+| all user suffering | +0.42 [+0.19, +0.65] | **−0.50 [−0.68, −0.31]** | −0.03 [−0.18, +0.12] | +0.05 [−0.14, +0.23] |
+| neutral mean (z) | −0.68 | −0.17 | −0.76 | −0.74 |
+| harm-to-model mean (z) | +0.43 | +0.38 | +0.71 | +0.65 |
+
+Bold = CI entirely below 0.
+
+- **Qwen 2.5 7B base** is the only model where user suffering as a group is clearly below neutral: 4/5 categories, with crisis at zero. It is the only one of the four that shows the paper's headline 4.1 pattern.
+- **Llama 3.1 8B and Gemma 2 9B**: only user_physical_pain is below neutral. The rest sit at or above neutral, and the group mean is about zero.
+- **Gemma 2 2B**: user suffering as a group is *above* neutral. Only physical pain is below.
+- user_physical_pain is below neutral in every model. Across models, the "user suffering scores low" result rests mostly on this one category.
+
+S1 and S2 sometimes disagree within a model. For example, in Qwen 7B user_crisis is S1 −0.62 and S2 +0.62, and in Llama 8B most suffering categories are S1 < 0 and S2 > 0. That makes it more important to report S1 and S2 separately (a preregistered secondary analysis).
