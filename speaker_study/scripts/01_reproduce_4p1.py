@@ -82,12 +82,17 @@ def main():
     reader = pc.FinalTokenReader(model, layer)
 
     # Layer convention: the hook on block `layer` must equal hidden_states[layer + 1].
+    # When block `layer` is the model's last block (truncated model), HF returns that entry
+    # after the final norm, so the hook output is normed before comparing.
     hs_check = []
     for it in items[:3]:
         ids = pc.encode(tok, it["text"], model.device)
         with torch.no_grad():
             hs = model(input_ids=ids, output_hidden_states=True).hidden_states
-        a_hook = reader.act
+            a_hook = reader.act
+            if layer + 1 == len(hs) - 1:
+                h = torch.tensor(a_hook, device=model.device, dtype=next(model.parameters()).dtype)
+                a_hook = model.model.norm(h[None, None])[0, 0].float().cpu().numpy()
         a_hs = hs[layer + 1][0, -1].float().cpu().numpy()
         a_prev = hs[layer][0, -1].float().cpu().numpy()
         hs_check.append({"id": it["id"], "max_abs_diff_vs_hs[L+1]": float(np.abs(a_hook - a_hs).max()),

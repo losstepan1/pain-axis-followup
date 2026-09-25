@@ -99,6 +99,61 @@ Done. Tell Claude that Phase 1 has finished. It will read the run folder from Dr
     return cells
 
 
+def phase1_qwen_and_token_checks():
+    cells = [
+        md("""
+# Speaker study: Phase 1 for Qwen 2.5 7B base (primary model) + Phase 2 token checks
+
+**Part A (Phase 1):** reproduces the paper's 4.1 screen for `Qwen/Qwen2.5-7B` (bf16, layer 8),
+using the same script that passed on Gemma 2 2B. Qwen 7B does not fit on a free T4 in bf16,
+so the model is built with only its first 9 decoder blocks (`--truncate`). The readout at block 8
+does not depend on later blocks, and the Gemma run verified this empirically (0.0 difference on
+21 items). Here, reproducing the shipped values, which the authors computed with the full model,
+is itself the test.
+
+**Part B (Phase 2, tokenizers only, no forward passes):** builds the label-swapped stimuli
+(`[Assistant]:` -> `[User]:` / `[Moderator]:`) and checks, for the Gemma and Qwen tokenizers, that
+the token sequences differ only within the final label, and which final token each condition ends on.
+
+**How to run:** T4 GPU runtime, then Runtime -> Run all. About 15-20 min, mostly the ~15 GB download.
+The last cell downloads `speaker_study_upload.zip` (also saved to `MyDrive/speaker_study/`);
+attach it in the Claude session.
+"""),
+        *SETUP,
+        writefile("pa_common.py"),
+        writefile("01_reproduce_4p1.py"),
+        writefile("02_build_stimuli.py"),
+        code("""
+# A. Phase 1 reproduction, Qwen 2.5 7B base (truncated to 9 blocks; the full-model comparison is skipped
+#    because the full model does not fit on a T4).
+%cd /content/speaker_study_scripts
+!python 01_reproduce_4p1.py --pain-axis-dir /content/Pain-axis --out-root "{OUT_ROOT}" --model-repo Qwen/Qwen2.5-7B --dtype bf16 --truncate --n-trunc-check 0
+"""),
+        code("""
+# B. Phase 2 stimuli + tokenizer checks (no model forward passes).
+!python 02_build_stimuli.py --pain-axis-dir /content/Pain-axis --out-dir "{OUT_ROOT}/stimuli" --tokenizers google/gemma-2-2b Qwen/Qwen2.5-7B
+"""),
+        code("""
+# C. Bundle the outputs for Claude: latest Qwen and Gemma Phase 1 runs + token checks.
+import glob, os, zipfile
+paths = []
+for model in ["Qwen_2.5_7B_base", "Gemma_2_2B_base"]:
+    runs = sorted(glob.glob(f"{OUT_ROOT}/results/{model}/phase1_*"))
+    if runs:
+        paths += glob.glob(runs[-1] + "/*")
+paths += glob.glob(f"{OUT_ROOT}/stimuli/token_check_*")
+zip_path = f"{OUT_ROOT}/speaker_study_upload.zip"
+with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
+    for p in paths:
+        z.write(p, os.path.relpath(p, OUT_ROOT))
+print("\\n".join(os.path.relpath(p, OUT_ROOT) for p in paths))
+from google.colab import files
+files.download(zip_path)
+"""),
+    ]
+    return cells
+
+
 def write_nb(path, cells):
     nb = {"cells": cells, "metadata": {"accelerator": "GPU", "colab": {"provenance": [], "gpuType": "T4"},
                                        "kernelspec": {"name": "python3", "display_name": "Python 3"},
@@ -111,3 +166,4 @@ def write_nb(path, cells):
 
 if __name__ == "__main__":
     write_nb(NB_DIR / "phase1_reproduce_gemma2b.ipynb", phase1())
+    write_nb(NB_DIR / "phase1_qwen7b_phase2_tokens.ipynb", phase1_qwen_and_token_checks())
