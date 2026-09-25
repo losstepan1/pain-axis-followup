@@ -1,0 +1,44 @@
+{
+  "EXPLORATORY": "power at observed sigma/tau, Qwen",
+  "rows": [
+    {
+      "true_I": 0.3,
+      "power_item": 0.83,
+      "power_category": 0.54,
+      "coprimary_Hspeaker_direction": 0.54,
+      "coprimary": {
+        "discordant": 0.44,
+        "interaction_only": 0.35,
+        "partial_suffer_only": 0.1,
+        "partial_harm_only": 0.09,
+        "equivalent_parallel": 0.02
+      }
+    },
+    {
+      "true_I": 0.5,
+      "power_item": 0.99,
+      "power_category": 0.87,
+      "coprimary_Hspeaker_direction": 0.87,
+      "coprimary": {
+        "partial_harm_only": 0.32,
+        "partial_suffer_only": 0.27,
+        "interaction_only": 0.23,
+        "discordant": 0.13,
+        "crossover": 0.05
+      }
+    },
+    {
+      "true_I": 0.7,
+      "power_item": 1.0,
+      "power_category": 0.99,
+      "coprimary_Hspeaker_direction": 0.99,
+      "coprimary": {
+        "partial_harm_only": 0.36,
+        "crossover": 0.34,
+        "partial_suffer_only": 0.16,
+        "interaction_only": 0.13,
+        "discordant": 0.01
+      }
+    }
+  ]
+}

@@ -59,7 +59,30 @@ What the estimates rule out (a direct reading of the CIs, not a preregistered ve
 | user suffering | −0.67 | +1.19 | −1.53 |
 
 - **The user-suffering categories do not become "self" under `[User]:`.** user_physical_pain, the paper's lowest category, rises *less* than the neutral label effect (d = +1.66 vs +1.75).
-- **A small shift can't be excluded.** A shift in the H-speaker direction of up to roughly half the baseline harm-vs-suffering gap (≈ 0.47 of 1.06 z) remains possible.
+- **A small shift can't be excluded.** A shift in the H-speaker direction of up to roughly half the baseline harm-vs-suffering gap (≈ 0.47 of 1.06 z) remains possible. At the observed noise, the design has only about 31% power for an effect of the observed size (next section).
+
+## How much depends on the choice of confirmatory unit (D1)? *(exploratory)*
+
+These checks are exploratory, from `tools/explore_d1_sensitivity.py` (see DEVIATIONS 32–33). They change no verdict.
+
+- **The item-level assumption fails.** Categories differ in their label effect beyond item noise. Qwen: F(18, 399) = 3.79, p < .001, τ = 0.22 [0.14, 0.36]. Gemma: F = 2.14, p = .004, τ = 0.24 [0.10, 0.44].
+- **Not a turn-structure artefact.** The heterogeneity survives restricting to single-turn items, and it does not track a category's share of multi-turn items.
+- **A mixed model sides with the category level.** A random-intercept model uses all 420 items and estimates τ from the data, so it sits between the two units. It gives the category-level answer: Qwen I = +0.20 [−0.07, +0.48], p = .15; Gemma +0.03 [−0.32, +0.38].
+- **At the observed noise, the item-level test is invalid and the category-level test is underpowered.** Re-simulated at Qwen's observed σ = 0.60 and τ = 0.22:
+
+| true I | item level rejects | category level rejects | co-primary "discordant" |
+|---|---|---|---|
+| 0 | 34% | 5% | 78% |
+| 0.20 (observed) | 74% | 31% | 65% |
+| 0.30 | 83% | 54% | 44% |
+| 0.50 | 99% | 87% | 13% |
+
+- **"Discordant" is close to uninformative here.** It is nearly as likely with no effect as with an effect of the observed size. The study can reliably detect interactions of about 0.45 z or more, and cannot resolve effects around 0.2 z. The preregistration's power figure (93% at I ≈ 0.32) was too optimistic because of a noise-scaling error in the simulation (DEVIATIONS 32).
+- **Not affected by D1:**
+  - the point estimates, which are identical under every analysis;
+  - the exclusion of strong H-speaker (every upper bound is ≤ 0.48, against a prediction of about 2.1);
+  - the preserved group ordering;
+  - the label main effect.
 
 ## Secondary results (descriptive, no multiplicity correction)
 

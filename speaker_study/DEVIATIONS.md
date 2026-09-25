@@ -60,3 +60,12 @@ Append-only log. Each entry is dated and says which phase it concerns.
     - the per-group levels table and the comparison of label effects on cosine vs norm.
 
     None of these changes a preregistered verdict.
+
+## 2026-09-25, after Checkpoint 3: sensitivity of the conclusions to D1 (exploratory)
+
+32. **Correction to the frozen preregistration (documentation error, found after the data).** PREREGISTRATION section 5 says the simulations used "item noise SD 0.3 z". In `tools/simulate_validation.py` that noise was added to the S1 and S2 z-scores *separately*, so the noise on the pain axis (their mean) was 0.3/√2 ≈ 0.21 z. The observed within-category SD of d on the pain axis is 0.60 z (Qwen) and 1.01 z (Gemma). The preregistered error-rate conclusions (item-level tests anticonservative under category heterogeneity; category-level tests valid) still hold at the observed noise (entry 33). The **power figures were optimistic**. The preregistration says 93% power at I ≈ 0.32, but at the observed noise and heterogeneity the category-level power is 31% at I = 0.20, 54% at I = 0.30, 87% at I = 0.50 and 99% at I = 0.70 (Qwen parameters, 100 replicates each). The preregistration text is left unchanged, and REPORT.md cites the corrected values.
+33. **Exploratory D1 sensitivity analysis** (`tools/explore_d1_sensitivity.py` → `results/exploratory/d1_sensitivity_20260925_162115/`). This is not preregistered and changes no verdict. Findings:
+    - Category heterogeneity is statistically real. Qwen: F(18, 399) = 3.79, p = 4e-7, τ = 0.22 [0.14, 0.36]. Gemma: F = 2.14, p = .004, τ = 0.24 [0.10, 0.44].
+    - A random-intercept mixed model (REML) matches the category-level analysis. Qwen: I = +0.20 [−0.07, +0.48], p = .15. Gemma: I = +0.03 [−0.32, +0.38].
+    - Re-simulating at the observed σ and τ (Qwen): the item-level test rejects a true null 34% of the time and the category-level test 5%. The co-primary rule returns "discordant" 78% of the time when I = 0, and 65% when I = 0.20.
+    - The heterogeneity is not explained by multi-turn composition. Spearman ρ between a category's multi-turn share and its excess d: −0.19 (Qwen) and +0.36 (Gemma), both n.s. τ on single-turn items only: 0.23 (Qwen) and 0.16 (Gemma).

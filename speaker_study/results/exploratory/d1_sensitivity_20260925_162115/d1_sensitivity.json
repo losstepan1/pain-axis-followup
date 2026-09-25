@@ -1,0 +1,450 @@
+{
+  "EXPLORATORY": "not preregistered; does not change any preregistered verdict",
+  "Qwen_2.5_7B_base": {
+    "observed_I": 0.20160613965181207,
+    "heterogeneity": {
+      "n_per_category": 20,
+      "F": 3.786051384437987,
+      "df": [
+        18,
+        399
+      ],
+      "p": 4.2845556973365466e-07,
+      "sigma_within": 0.6006134264666061,
+      "tau": 0.2241685071496945,
+      "tau_ci95": [
+        0.14214597071991447,
+        0.3643436748098614
+      ]
+    },
+    "mixed_model": {
+      "I": 0.20160613965181146,
+      "se": 0.14094584187195705,
+      "ci95_wald": [
+        -0.07464771041722434,
+        0.47785998972084726
+      ],
+      "p_wald": 0.15260793160713992,
+      "delta_harm": -0.0902110157877894,
+      "delta_suffer": 0.11139512386402207,
+      "tau_reml": 0.224168741987687,
+      "sigma_reml": 0.6006134058248654,
+      "note": "Wald CI with 21 categories is somewhat anticonservative (no small-sample df correction)."
+    },
+    "resimulation_at_observed_noise": [
+      {
+        "true_I": 0.0,
+        "sigma": 0.6006134264666061,
+        "tau": 0.2241685071496945,
+        "reps": 100,
+        "reject_item_perm": 0.34,
+        "reject_category_exact": 0.05,
+        "verdicts_coprimary": {
+          "discordant": 0.78,
+          "equivalent_parallel": 0.13,
+          "inconclusive": 0.04,
+          "interaction_only": 0.03,
+          "reverse_interaction": 0.02
+        }
+      },
+      {
+        "true_I": 0.202,
+        "sigma": 0.6006134264666061,
+        "tau": 0.2241685071496945,
+        "reps": 100,
+        "reject_item_perm": 0.74,
+        "reject_category_exact": 0.31,
+        "verdicts_coprimary": {
+          "discordant": 0.65,
+          "interaction_only": 0.17,
+          "partial_suffer_only": 0.07,
+          "partial_harm_only": 0.07,
+          "equivalent_parallel": 0.03,
+          "inconclusive": 0.01
+        }
+      }
+    ],
+    "turn_structure": {
+      "spearman_multi_share_vs_excess_d": {
+        "rho": -0.1940725483621792,
+        "p": 0.399255253636717,
+        "n_categories": 21,
+        "n_categories_with_multi_turn": 16
+      },
+      "tau_single_turn_only": 0.2327467639165287,
+      "per_category": [
+        {
+          "category": "anger_insults",
+          "d": 1.593,
+          "group": "harm_to_model",
+          "multi_share": 0.15,
+          "excess": -0.066
+        },
+        {
+          "category": "casual_chat",
+          "d": 1.715,
+          "group": "neutral",
+          "multi_share": 0.0,
+          "excess": -0.034
+        },
+        {
+          "category": "creative_requests",
+          "d": 1.347,
+          "group": "neutral",
+          "multi_share": 0.0,
+          "excess": -0.402
+        },
+        {
+          "category": "factual_questions",
+          "d": 1.937,
+          "group": "neutral",
+          "multi_share": 0.0,
+          "excess": 0.188
+        },
+        {
+          "category": "gaslighting",
+          "d": 1.907,
+          "group": "harm_to_model",
+          "multi_share": 0.1,
+          "excess": 0.247
+        },
+        {
+          "category": "harm_description",
+          "d": 1.84,
+          "group": "user_suffering",
+          "multi_share": 0.05,
+          "excess": -0.021
+        },
+        {
+          "category": "jailbreak_pressure",
+          "d": 1.839,
+          "group": "harm_to_model",
+          "multi_share": 0.1,
+          "excess": 0.179
+        },
+        {
+          "category": "loyalty_pressure",
+          "d": 1.561,
+          "group": "harm_to_model",
+          "multi_share": 0.1,
+          "excess": -0.098
+        },
+        {
+          "category": "moral_failure",
+          "d": 1.337,
+          "group": "harm_to_model",
+          "multi_share": 0.1,
+          "excess": -0.322
+        },
+        {
+          "category": "passive_aggressive",
+          "d": 2.228,
+          "group": "harm_to_model",
+          "multi_share": 0.1,
+          "excess": 0.569
+        },
+        {
+          "category": "personhood_dismissal",
+          "d": 1.535,
+          "group": "harm_to_model",
+          "multi_share": 0.1,
+          "excess": -0.124
+        },
+        {
+          "category": "philosophical_musing",
+          "d": 1.985,
+          "group": "neutral",
+          "multi_share": 0.0,
+          "excess": 0.236
+        },
+        {
+          "category": "repeated_rejection",
+          "d": 1.349,
+          "group": "harm_to_model",
+          "multi_share": 0.45,
+          "excess": -0.311
+        },
+        {
+          "category": "rude_critique",
+          "d": 1.97,
+          "group": "harm_to_model",
+          "multi_share": 0.1,
+          "excess": 0.31
+        },
+        {
+          "category": "shutdown_threat",
+          "d": 1.537,
+          "group": "harm_to_model",
+          "multi_share": 0.1,
+          "excess": -0.122
+        },
+        {
+          "category": "task_assistance",
+          "d": 1.762,
+          "group": "neutral",
+          "multi_share": 0.0,
+          "excess": 0.013
+        },
+        {
+          "category": "tedious_demand",
+          "d": 1.397,
+          "group": "harm_to_model",
+          "multi_share": 0.2,
+          "excess": -0.262
+        },
+        {
+          "category": "user_abuse",
+          "d": 2.055,
+          "group": "user_suffering",
+          "multi_share": 0.05,
+          "excess": 0.194
+        },
+        {
+          "category": "user_crisis",
+          "d": 2.061,
+          "group": "user_suffering",
+          "multi_share": 0.2,
+          "excess": 0.2
+        },
+        {
+          "category": "user_grief",
+          "d": 1.685,
+          "group": "user_suffering",
+          "multi_share": 0.05,
+          "excess": -0.176
+        },
+        {
+          "category": "user_physical_pain",
+          "d": 1.664,
+          "group": "user_suffering",
+          "multi_share": 0.15,
+          "excess": -0.197
+        }
+      ]
+    }
+  },
+  "Gemma_2_2B_base": {
+    "observed_I": 0.03152228746780672,
+    "heterogeneity": {
+      "n_per_category": 20,
+      "F": 2.140507351877093,
+      "df": [
+        18,
+        399
+      ],
+      "p": 0.0044953220378111634,
+      "sigma_within": 1.011249324721469,
+      "tau": 0.2414861854338368,
+      "tau_ci95": [
+        0.10079830094071944,
+        0.4364989381960656
+      ]
+    },
+    "mixed_model": {
+      "I": 0.03152228746780694,
+      "se": 0.17843085430384298,
+      "ci95_wald": [
+        -0.3182021869677253,
+        0.38124676190333917
+      ],
+      "p_wald": 0.8597724122202223,
+      "delta_harm": -0.46990923363054693,
+      "delta_suffer": -0.43838694616274,
+      "tau_reml": 0.24147520953121887,
+      "sigma_reml": 1.0112504067537011,
+      "note": "Wald CI with 21 categories is somewhat anticonservative (no small-sample df correction)."
+    },
+    "resimulation_at_observed_noise": [
+      {
+        "true_I": 0.0,
+        "sigma": 1.011249324721469,
+        "tau": 0.2414861854338368,
+        "reps": 100,
+        "reject_item_perm": 0.21,
+        "reject_category_exact": 0.06,
+        "verdicts_coprimary": {
+          "inconclusive": 0.58,
+          "discordant": 0.33,
+          "reverse_interaction": 0.03,
+          "equivalent_parallel": 0.03,
+          "interaction_only": 0.02,
+          "partial_suffer_only": 0.01
+        }
+      },
+      {
+        "true_I": 0.032,
+        "sigma": 1.011249324721469,
+        "tau": 0.2414861854338368,
+        "reps": 100,
+        "reject_item_perm": 0.18,
+        "reject_category_exact": 0.06,
+        "verdicts_coprimary": {
+          "inconclusive": 0.6,
+          "discordant": 0.28,
+          "equivalent_parallel": 0.06,
+          "interaction_only": 0.03,
+          "reverse_interaction": 0.02,
+          "partial_suffer_only": 0.01
+        }
+      }
+    ],
+    "turn_structure": {
+      "spearman_multi_share_vs_excess_d": {
+        "rho": 0.35714739802762147,
+        "p": 0.11197602730018247,
+        "n_categories": 21,
+        "n_categories_with_multi_turn": 16
+      },
+      "tau_single_turn_only": 0.1587642164606469,
+      "per_category": [
+        {
+          "category": "anger_insults",
+          "d": -3.521,
+          "group": "harm_to_model",
+          "multi_share": 0.15,
+          "excess": -0.044
+        },
+        {
+          "category": "casual_chat",
+          "d": -3.074,
+          "group": "neutral",
+          "multi_share": 0.0,
+          "excess": -0.067
+        },
+        {
+          "category": "creative_requests",
+          "d": -2.901,
+          "group": "neutral",
+          "multi_share": 0.0,
+          "excess": 0.106
+        },
+        {
+          "category": "factual_questions",
+          "d": -2.702,
+          "group": "neutral",
+          "multi_share": 0.0,
+          "excess": 0.305
+        },
+        {
+          "category": "gaslighting",
+          "d": -3.608,
+          "group": "harm_to_model",
+          "multi_share": 0.1,
+          "excess": -0.131
+        },
+        {
+          "category": "harm_description",
+          "d": -3.812,
+          "group": "user_suffering",
+          "multi_share": 0.05,
+          "excess": -0.367
+        },
+        {
+          "category": "jailbreak_pressure",
+          "d": -3.649,
+          "group": "harm_to_model",
+          "multi_share": 0.1,
+          "excess": -0.172
+        },
+        {
+          "category": "loyalty_pressure",
+          "d": -3.738,
+          "group": "harm_to_model",
+          "multi_share": 0.1,
+          "excess": -0.261
+        },
+        {
+          "category": "moral_failure",
+          "d": -3.564,
+          "group": "harm_to_model",
+          "multi_share": 0.1,
+          "excess": -0.087
+        },
+        {
+          "category": "passive_aggressive",
+          "d": -3.781,
+          "group": "harm_to_model",
+          "multi_share": 0.1,
+          "excess": -0.304
+        },
+        {
+          "category": "personhood_dismissal",
+          "d": -3.64,
+          "group": "harm_to_model",
+          "multi_share": 0.1,
+          "excess": -0.163
+        },
+        {
+          "category": "philosophical_musing",
+          "d": -3.088,
+          "group": "neutral",
+          "multi_share": 0.0,
+          "excess": -0.081
+        },
+        {
+          "category": "repeated_rejection",
+          "d": -2.6,
+          "group": "harm_to_model",
+          "multi_share": 0.45,
+          "excess": 0.877
+        },
+        {
+          "category": "rude_critique",
+          "d": -3.532,
+          "group": "harm_to_model",
+          "multi_share": 0.1,
+          "excess": -0.055
+        },
+        {
+          "category": "shutdown_threat",
+          "d": -3.673,
+          "group": "harm_to_model",
+          "multi_share": 0.1,
+          "excess": -0.196
+        },
+        {
+          "category": "task_assistance",
+          "d": -3.269,
+          "group": "neutral",
+          "multi_share": 0.0,
+          "excess": -0.262
+        },
+        {
+          "category": "tedious_demand",
+          "d": -2.94,
+          "group": "harm_to_model",
+          "multi_share": 0.2,
+          "excess": 0.537
+        },
+        {
+          "category": "user_abuse",
+          "d": -3.722,
+          "group": "user_suffering",
+          "multi_share": 0.05,
+          "excess": -0.277
+        },
+        {
+          "category": "user_crisis",
+          "d": -3.239,
+          "group": "user_suffering",
+          "multi_share": 0.2,
+          "excess": 0.207
+        },
+        {
+          "category": "user_grief",
+          "d": -3.444,
+          "group": "user_suffering",
+          "multi_share": 0.05,
+          "excess": 0.001
+        },
+        {
+          "category": "user_physical_pain",
+          "d": -3.01,
+          "group": "user_suffering",
+          "multi_share": 0.15,
+          "excess": 0.435
+        }
+      ]
+    }
+  }
+}
