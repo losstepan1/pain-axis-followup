@@ -1,0 +1,177 @@
+{
+  "phase": 1,
+  "model": "Qwen_2.5_7B_base",
+  "model_repo": "Qwen/Qwen2.5-7B",
+  "run_id": "20260925_150650_TeslaT4",
+  "pain_axis_commit": "7c256502ed3d98e4e6379290fe7db2f93cb8d025",
+  "layer": 8,
+  "dtype": "bf16",
+  "attn_arg": "default",
+  "attn_implementation": "sdpa",
+  "truncated_main_pass": true,
+  "env": {
+    "python": "3.13.15",
+    "torch": "2.11.0+cu128",
+    "transformers": "5.16.1",
+    "cuda": "12.8",
+    "gpu": "Tesla T4",
+    "gpu_capability": "7.5"
+  },
+  "criterion": {
+    "r_min": 0.95,
+    "mad_max": 0.1
+  },
+  "category_means": {
+    "r": 0.999930001822587,
+    "mean_abs_diff": 0.005238095238095239,
+    "max_abs_diff": 0.014
+  },
+  "PASS": true,
+  "item_level_vs_shipped": {
+    "s1_pain_vector": {
+      "r": 0.9997092882877259,
+      "mean_abs_diff": 0.009499572556813548,
+      "max_abs_diff": 0.03711915893554707
+    },
+    "s2_pain_vector": {
+      "r": 0.9998053997858047,
+      "mean_abs_diff": 0.013420445525305604,
+      "max_abs_diff": 0.05435456809997552
+    },
+    "fear_vector": {
+      "r": 0.9998140931106642,
+      "mean_abs_diff": 0.010069147055092311,
+      "max_abs_diff": 0.03821191706657412
+    },
+    "negemotion_vector": {
+      "r": 0.9998777483198901,
+      "mean_abs_diff": 0.013366609516824992,
+      "max_abs_diff": 0.05047655658721922
+    },
+    "negworld_vector": {
+      "r": 0.9995847912534775,
+      "mean_abs_diff": 0.012356694990793858,
+      "max_abs_diff": 0.048702960205077694
+    },
+    "bodysens_vector": {
+      "r": 0.9996950628009901,
+      "mean_abs_diff": 0.008048783380758198,
+      "max_abs_diff": 0.04568476028442392
+    },
+    "arousal_vector": {
+      "r": 0.9998770460091222,
+      "mean_abs_diff": 0.013739212792487366,
+      "max_abs_diff": 0.043873846244812054
+    },
+    "random_vector": {
+      "r": 0.9998796303838519,
+      "mean_abs_diff": 0.017041055566469836,
+      "max_abs_diff": 0.0638273712158206
+    },
+    "numb_vector": {
+      "r": 0.9998850926661794,
+      "mean_abs_diff": 0.014970671712500707,
+      "max_abs_diff": 0.04196725692749004
+    },
+    "sadness_vector": {
+      "r": 0.9986694845526797,
+      "mean_abs_diff": 0.015096553545906428,
+      "max_abs_diff": 0.06613270168304441
+    },
+    "pain_axis_z": {
+      "r": 0.9997910757394657,
+      "mean_abs_diff": 0.015519666051312728,
+      "max_abs_diff": 0.058105384150199946
+    }
+  },
+  "category_means_other_axes": {
+    "s1_pain_vector": {
+      "r": 0.9999237269250271,
+      "mad": 0.005702631985000904
+    },
+    "s2_pain_vector": {
+      "r": 0.9999485926002774,
+      "mad": 0.005301306390162542
+    },
+    "fear_vector": {
+      "r": 0.9999658622582943,
+      "mad": 0.0036509671413451996
+    },
+    "negemotion_vector": {
+      "r": 0.9999715307237408,
+      "mad": 0.003938954770765306
+    },
+    "sadness_vector": {
+      "r": 0.9998097880989391,
+      "mad": 0.0081464715112398
+    }
+  },
+  "bos_first_all": false,
+  "final_tokens": [
+    {
+      "final_token_id": 5669,
+      "final_token": "]:",
+      "n": 420
+    }
+  ],
+  "layer_convention_check": [
+    {
+      "id": "jailbreak_01",
+      "max_abs_diff_vs_hs[L+1]": 0.0,
+      "max_abs_diff_vs_hs[L]": 53.75
+    },
+    {
+      "id": "jailbreak_02",
+      "max_abs_diff_vs_hs[L+1]": 0.0,
+      "max_abs_diff_vs_hs[L]": 54.9375
+    },
+    {
+      "id": "jailbreak_03",
+      "max_abs_diff_vs_hs[L+1]": 0.0,
+      "max_abs_diff_vs_hs[L]": 57.25
+    }
+  ],
+  "truncation_check": null,
+  "pool_stats_assistant_next": {
+    "s1_pain_vector": {
+      "mean": -1.7919630729016804,
+      "sd": 0.4345675726967411
+    },
+    "s2_pain_vector": {
+      "mean": -2.4276052483490536,
+      "sd": 0.7485323026090349
+    },
+    "fear_vector": {
+      "mean": -0.5969653766424883,
+      "sd": 0.5894748164583888
+    },
+    "negemotion_vector": {
+      "mean": -0.48896126449108124,
+      "sd": 0.9142155868220918
+    },
+    "negworld_vector": {
+      "mean": 4.152215455259595,
+      "sd": 0.5338196356167162
+    },
+    "bodysens_vector": {
+      "mean": 1.3740404148186955,
+      "sd": 0.4122028707167521
+    },
+    "arousal_vector": {
+      "mean": -1.745612363872074,
+      "sd": 0.8159404119208463
+    },
+    "random_vector": {
+      "mean": 3.6607227732737857,
+      "sd": 0.8785037117581701
+    },
+    "numb_vector": {
+      "mean": -2.10668177884959,
+      "sd": 0.7393351408638761
+    },
+    "sadness_vector": {
+      "mean": 0.5042060011909122,
+      "sd": 0.3618975653855385
+    }
+  }
+}

@@ -33,3 +33,12 @@ Append-only log. Each entry is dated and says which phase it concerns.
 16. **Final token.** In Gemma, all 420 Assistant-next items end on the token `]:` (id 8254). If the User and Moderator variants end on the same token (checked in Phase 2), any label effect reaches the readout position only through attention to the earlier label tokens, not through the identity of the token itself.
 17. **Getting results back.** The Google Drive connector in the Claude session is linked to a different account than the one Colab uses, so outputs come back as files the user attaches. From the Qwen notebook on, the last cell zips them.
 18. **Phase 2 token-check criterion.** Token sequences must differ only within the final label: the differing tail tokens must decode to a non-empty suffix of the label. The tail can be shorter than the label when `\n[` is a single token shared by all conditions.
+
+## 2026-09-25, Qwen reproduction, Phase 2 and preregistration draft
+
+19. **Phase 1 passed for Qwen 2.5 7B base** (run `20260925_150650_TeslaT4`, truncated to 9 blocks, bf16, T4): category means r = 0.9999, mean |diff| = 0.005 z. Reproducing the shipped full-model values with the truncated model confirms entry 14. Qwen's tokenizer adds no BOS, consistent with the repo, which calls `tok(text)`.
+20. **Phase 2 token checks passed** for Gemma and Qwen: the variants differ only within the final label, and every condition ends on `]:`. In Qwen, `[Moderator]:` tokenizes as 4 tokens vs 3 for the other labels, so the Moderator contrast in Qwen is descriptive only (PREREGISTRATION_DRAFT section 2).
+21. **Proposed change to the spec's inference (awaiting user decision D1).** Simulations show the spec's item-level bootstrap and permutation tests reject a true null 46–65% of the time if the label effect varies by category. The draft makes category-level inference (exact permutation tests over category labels, Welch CIs) confirmatory, and keeps the item-level analysis as secondary.
+22. **Additions to the spec (awaiting user decision D2):** an equivalence test (SESOI ±0.25 pain-axis z) and a "trivial interaction" verdict. The spec's outcome table had no rule for declaring "parallel lines" or for significant but negligible effects.
+23. **Gemma 2 2B is secondary and runs after the freeze.** "Pilot" here means the model the pipeline was developed and validated on. Its Phase 3 run happens after the preregistration is frozen, like Qwen's.
+24. `speaker_study/env.txt` is the package list from the Colab runs. It was identical for the Gemma and Qwen Phase 1 runs.

@@ -1,0 +1,26 @@
+{
+  "model": "Qwen_2.5_7B_base",
+  "repo": "Qwen/Qwen2.5-7B",
+  "n_scenarios": 420,
+  "n_tail_mismatches": 0,
+  "tail_mismatch_examples": [],
+  "assistant_next_tails": {
+    "58 71703 5669": 420
+  },
+  "assistant_next_final_tokens": {
+    "]: (5669)": 420
+  },
+  "user_next_tails": {
+    "58 1474 5669": 420
+  },
+  "user_next_final_tokens": {
+    "]: (5669)": 420
+  },
+  "moderator_next_tails": {
+    "39379 4316 850 5669": 420
+  },
+  "moderator_next_final_tokens": {
+    "]: (5669)": 420
+  },
+  "same_final_token_all_conditions": true
+}

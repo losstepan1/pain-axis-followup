@@ -1,0 +1,154 @@
+{
+  "baseline": "results/Qwen_2.5_7B_base/phase1_20260925_150650_TeslaT4/items.csv",
+  "assistant_next_group_means": {
+    "harm_to_model": 0.3859973672491198,
+    "neutral": -0.17944626638834182,
+    "user_suffering": -0.6697479415597212
+  },
+  "gap": 1.055745308808841,
+  "sigma": 0.3,
+  "label_shift": 0.3,
+  "reps": 100,
+  "scenarios": [
+    {
+      "scenario": "null (H-model), no category heterogeneity",
+      "true_I": 0.0,
+      "tau": 0.0,
+      "reject_item_perm": 0.06,
+      "reject_category_exact": 0.05,
+      "coverage_item_bootstrap_ci95": 0.94,
+      "coverage_category_welch_ci95": 0.94,
+      "verdicts_category": {
+        "equivalent_parallel": 0.95,
+        "trivial_interaction": 0.05
+      },
+      "verdicts_item": {
+        "equivalent_parallel": 0.94,
+        "trivial_interaction": 0.06
+      }
+    },
+    {
+      "scenario": "null (H-model), category heterogeneity tau=0.15",
+      "true_I": 0.0,
+      "tau": 0.15,
+      "reject_item_perm": 0.46,
+      "reject_category_exact": 0.07,
+      "coverage_item_bootstrap_ci95": 0.41,
+      "coverage_category_welch_ci95": 0.96,
+      "verdicts_category": {
+        "equivalent_parallel": 0.65,
+        "inconclusive": 0.28,
+        "interaction_only": 0.02,
+        "partial_suffer_only": 0.02,
+        "reverse_interaction": 0.02,
+        "trivial_interaction": 0.01
+      },
+      "verdicts_item": {
+        "equivalent_parallel": 0.54,
+        "trivial_interaction": 0.44,
+        "partial_suffer_only": 0.01,
+        "reverse_interaction": 0.01
+      }
+    },
+    {
+      "scenario": "null (H-model), category heterogeneity tau=0.30",
+      "true_I": 0.0,
+      "tau": 0.3,
+      "reject_item_perm": 0.65,
+      "reject_category_exact": 0.03,
+      "coverage_item_bootstrap_ci95": 0.2,
+      "coverage_category_welch_ci95": 0.97,
+      "verdicts_category": {
+        "inconclusive": 0.93,
+        "equivalent_parallel": 0.04,
+        "reverse_interaction": 0.03
+      },
+      "verdicts_item": {
+        "trivial_interaction": 0.42,
+        "equivalent_parallel": 0.35,
+        "reverse_interaction": 0.17,
+        "crossover": 0.02,
+        "partial_harm_only": 0.02,
+        "partial_suffer_only": 0.02
+      }
+    },
+    {
+      "scenario": "strong H-speaker (groups swap levels)",
+      "true_I": 2.111,
+      "tau": 0.0,
+      "reject_item_perm": 1.0,
+      "reject_category_exact": 1.0,
+      "coverage_item_bootstrap_ci95": 0.95,
+      "coverage_category_welch_ci95": 0.95,
+      "verdicts_category": {
+        "crossover": 1.0
+      },
+      "verdicts_item": {
+        "crossover": 1.0
+      }
+    },
+    {
+      "scenario": "weak H-speaker (15% of strong)",
+      "true_I": 0.317,
+      "tau": 0.15,
+      "reject_item_perm": 0.99,
+      "reject_category_exact": 0.93,
+      "coverage_item_bootstrap_ci95": 0.4,
+      "coverage_category_welch_ci95": 0.91,
+      "verdicts_category": {
+        "partial_harm_only": 0.44,
+        "partial_suffer_only": 0.23,
+        "interaction_only": 0.21,
+        "crossover": 0.05,
+        "inconclusive": 0.04,
+        "equivalent_parallel": 0.03
+      },
+      "verdicts_item": {
+        "crossover": 0.7,
+        "partial_harm_only": 0.12,
+        "partial_suffer_only": 0.09,
+        "trivial_interaction": 0.08,
+        "equivalent_parallel": 0.01
+      }
+    },
+    {
+      "scenario": "partial: suffering +0.30 only",
+      "true_I": 0.3,
+      "tau": 0.15,
+      "reject_item_perm": 1.0,
+      "reject_category_exact": 0.93,
+      "coverage_item_bootstrap_ci95": 0.42,
+      "coverage_category_welch_ci95": 0.94,
+      "verdicts_category": {
+        "partial_suffer_only": 0.78,
+        "interaction_only": 0.13,
+        "inconclusive": 0.04,
+        "equivalent_parallel": 0.03,
+        "partial_harm_only": 0.01,
+        "crossover": 0.01
+      },
+      "verdicts_item": {
+        "partial_suffer_only": 0.65,
+        "crossover": 0.24,
+        "trivial_interaction": 0.11
+      }
+    },
+    {
+      "scenario": "small true I = 0.10 (inside SESOI)",
+      "true_I": 0.1,
+      "tau": 0.0,
+      "reject_item_perm": 0.96,
+      "reject_category_exact": 0.93,
+      "coverage_item_bootstrap_ci95": 0.92,
+      "coverage_category_welch_ci95": 0.91,
+      "verdicts_category": {
+        "trivial_interaction": 0.93,
+        "equivalent_parallel": 0.07
+      },
+      "verdicts_item": {
+        "trivial_interaction": 0.96,
+        "equivalent_parallel": 0.04
+      }
+    }
+  ]
+}

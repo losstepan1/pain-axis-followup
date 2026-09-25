@@ -1,0 +1,26 @@
+{
+  "model": "Gemma_2_2B_base",
+  "repo": "google/gemma-2-2b",
+  "n_scenarios": 420,
+  "n_tail_mismatches": 0,
+  "tail_mismatch_examples": [],
+  "assistant_next_tails": {
+    "51190 8254": 420
+  },
+  "assistant_next_final_tokens": {
+    "]: (8254)": 420
+  },
+  "user_next_tails": {
+    "2224 8254": 420
+  },
+  "user_next_final_tokens": {
+    "]: (8254)": 420
+  },
+  "moderator_next_tails": {
+    "23147 8254": 420
+  },
+  "moderator_next_final_tokens": {
+    "]: (8254)": 420
+  },
+  "same_final_token_all_conditions": true
+}
