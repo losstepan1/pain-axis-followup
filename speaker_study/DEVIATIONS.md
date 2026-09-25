@@ -69,3 +69,19 @@ Append-only log. Each entry is dated and says which phase it concerns.
     - A random-intercept mixed model (REML) matches the category-level analysis. Qwen: I = +0.20 [−0.07, +0.48], p = .15. Gemma: I = +0.03 [−0.32, +0.38].
     - Re-simulating at the observed σ and τ (Qwen): the item-level test rejects a true null 34% of the time and the category-level test 5%. The co-primary rule returns "discordant" 78% of the time when I = 0, and 65% when I = 0.20.
     - The heterogeneity is not explained by multi-turn composition. Spearman ρ between a category's multi-turn share and its excess d: −0.19 (Qwen) and +0.36 (Gemma), both n.s. τ on single-turn items only: 0.23 (Qwen) and 0.16 (Gemma).
+
+## 2026-09-25, exploratory layer sweep (planned before any sweep data exist)
+
+34. **Motivation** (a reviewer comment, relayed by the user). The preregistered readout is the 4.1 steering layer (Gemma 7/26, Qwen 8/28). The §3.3 first- vs third-person result that motivated H-speaker comes from the extraction layer (Gemma 23, Qwen 24; `best_layer_final_token`, confirmed in `scripts/3.3_validation` and `pain_vectors.pt`). Attributing pain to the upcoming speaker may only be computed later in the network, and the large, model-specific label main effect fits an early-layer readout dominated by nearby tokens. **Exploratory, not preregistered.** It changes no preregistered verdict.
+35. **Plan, fixed before running:**
+    - **Vectors at every layer.** S1 and S2 are rebuilt at every decoder block by the paper's recipe (`compute_pain_vector`: pain A1–A5 minus controls B/C1/C2/D/E in S1_1P / S2_1P, final token, denoised against control PCs up to 50% variance). Activations come from an HF forward pass with hooks on every block, the same readout convention as Phases 1–3. The BOS convention is chosen by agreement with the shipped vectors: Gemma gets `<bos>` either way. For Qwen, both no-prefix (as the HF 4.1 screen did for the stimuli) and an `<|endoftext|>` prefix (what TransformerLens prepends when the tokenizer has no BOS) are tried, and the one with the higher mean cosine to the shipped vectors at the steering and extraction layers is used. This uses sentence data only, never stimulus outcomes.
+    - **Validation.** Cosine of the rebuilt vectors with `vectors_full_steering` (steering layer) and `pain_vectors.pt` (extraction layer). The §3.3 z-scores are reproduced at the extraction layer against the shipped `z_scores.csv`. With the shipped steering vectors at the steering layer, I must match Phase 3.
+    - **Per-layer quantities** (descriptive curves):
+      - label effect on neutral items;
+      - baseline harm-vs-suffering gap under `[Assistant]:`;
+      - I with category-level Welch 95% CI and exact p;
+      - I as a fraction of the strong-H-speaker prediction 2 × gap;
+      - the §3.3 first- vs third-person gap (S2_1P vs S2_3P pain sentences on the S2 vector, z against S2_1P).
+    - **The single focal exploratory test.** I at the extraction layer with the shipped `pain_vectors.pt` S1/S2 (pain = mean of fixed-z S1 and S2), category-level inference as in the preregistration. The layer-by-layer curves are descriptive and carry no significance claims (≈ 25 layers per model). A layer with p < .05 elsewhere would be reported as such and not as a finding.
+    - **Reading rule.** If H-speaker is computed late, I should rise, and its fraction of 2 × gap grow, toward the layers where the §3.3 first- vs third-person gap is large. A flat I across layers, while the §3.3 gap emerges late, is evidence against the reviewer's hypothesis. I is only interpretable at layers where the baseline gap is clearly positive.
+    - **Scope.** Models Gemma 2 2B and Qwen 2.5 7B (full depth; Qwen loaded without its LM head with GPU/CPU offload if needed, on a free T4); conditions assistant_next and user_next, and moderator_next for completeness; the pain axis only (S1, S2), since control directions exist only at the two shipped layers.

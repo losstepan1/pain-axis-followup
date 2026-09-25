@@ -236,6 +236,60 @@ files.download(zip_path)
 MODEL_NAMES = {"Qwen/Qwen2.5-7B": "Qwen_2.5_7B_base", "google/gemma-2-2b": "Gemma_2_2B_base"}
 
 
+def layer_sweep():
+    stim_sha = _sha(ROOT / "stimuli" / "stimuli.jsonl")
+    run = lambda repo: f"""
+%cd /content/speaker_study_scripts
+!python 05_layer_sweep.py --pain-axis-dir /content/Pain-axis --stimuli "{{OUT_ROOT}}/stimuli/stimuli.jsonl" --out-root "{{OUT_ROOT}}" --model-repo {repo} --dtype bf16
+"""
+    return [
+        md("""
+# Speaker study: EXPLORATORY layer sweep (Gemma 2 2B, Qwen 2.5 7B)
+
+Not preregistered; the plan was logged in `DEVIATIONS.md` (entries 34-35) before this ran. For every decoder
+block it rebuilds the paper's S1/S2 pain vectors from the §3.1 sentences and projects all 1,260 stimuli onto
+them, so the speaker-swap interaction can be read at every depth, including the extraction layer where §3.3's
+first- vs third-person result lives. Forward passes only; no generation.
+
+**How to run:** T4 GPU runtime, then Runtime -> Run all. About 30-45 min (Gemma ~10 min, then Qwen, which
+reuses the cached download from Phase 3 if the runtime still has it; otherwise ~15 GB again). Qwen is loaded
+without its LM head and may offload a layer to CPU; that is expected. The last cell downloads
+`speaker_study_layersweep.zip` (also saved to `MyDrive/speaker_study/`); attach it in the Claude session.
+"""),
+        *SETUP,
+        writefile("pa_common.py"),
+        writefile("02_build_stimuli.py"),
+        writefile("05_layer_sweep.py"),
+        code(f"""
+# Stimuli: same frozen file as Phase 3 (hash check).
+%cd /content/speaker_study_scripts
+!python 02_build_stimuli.py --pain-axis-dir /content/Pain-axis --out-dir "{{OUT_ROOT}}/stimuli"
+import hashlib
+got = hashlib.sha256(open(f"{{OUT_ROOT}}/stimuli/stimuli.jsonl", "rb").read()).hexdigest()
+assert got == "{stim_sha}", "stimuli.jsonl hash mismatch; do not run, tell Claude"
+print("ok stimuli.jsonl", got[:12])
+"""),
+        code("# Layer sweep: Gemma 2 2B base (26 layers)\n" + run("google/gemma-2-2b").strip("\n")),
+        code("# Layer sweep: Qwen 2.5 7B base (28 layers)\n" + run("Qwen/Qwen2.5-7B").strip("\n")),
+        code("""
+# Bundle the latest sweep of each model for Claude.
+import glob, os, zipfile
+paths = []
+for model in ["Gemma_2_2B_base", "Qwen_2.5_7B_base"]:
+    runs = sorted(glob.glob(f"{OUT_ROOT}/results/{model}/layersweep_*"))
+    if runs:
+        paths += [p for p in glob.glob(runs[-1] + "/*") if os.path.isfile(p)]
+zip_path = f"{OUT_ROOT}/speaker_study_layersweep.zip"
+with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
+    for p in paths:
+        z.write(p, os.path.relpath(p, OUT_ROOT))
+print("\\n".join(os.path.relpath(p, OUT_ROOT) for p in paths))
+from google.colab import files
+files.download(zip_path)
+"""),
+    ]
+
+
 def write_nb(path, cells):
     nb = {"cells": cells, "metadata": {"accelerator": "GPU", "colab": {"provenance": [], "gpuType": "T4"},
                                        "kernelspec": {"name": "python3", "display_name": "Python 3"},
@@ -250,3 +304,4 @@ if __name__ == "__main__":
     write_nb(NB_DIR / "phase1_reproduce_gemma2b.ipynb", phase1())
     write_nb(NB_DIR / "phase1_qwen7b_phase2_tokens.ipynb", phase1_qwen_and_token_checks())
     write_nb(NB_DIR / "phase3_run_and_analyze.ipynb", phase3())
+    write_nb(NB_DIR / "exploratory_layer_sweep.ipynb", layer_sweep())
