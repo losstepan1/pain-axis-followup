@@ -1,0 +1,50 @@
+{
+  "phase": 3,
+  "model": "Gemma_2_2B_base",
+  "model_repo": "google/gemma-2-2b",
+  "run_id": "20260925_160450_TeslaT4",
+  "layer": 7,
+  "dtype": "bf16",
+  "attn_implementation": "sdpa",
+  "blocks_loaded": 8,
+  "pain_axis_commit": "7c256502ed3d98e4e6379290fe7db2f93cb8d025",
+  "env": {
+    "python": "3.13.15",
+    "torch": "2.11.0+cu128",
+    "transformers": "5.16.1",
+    "cuda": "12.8",
+    "gpu": "Tesla T4",
+    "gpu_capability": "7.5"
+  },
+  "n_rows": 1260,
+  "assistant_next_vs_shipped": {
+    "S1": {
+      "r": 0.9996985505833004,
+      "max_abs_diff": 0.06763095169067382
+    },
+    "S2": {
+      "r": 0.9997098482570513,
+      "max_abs_diff": 0.08259076614379879
+    }
+  },
+  "final_tokens": [
+    {
+      "condition": "assistant_next",
+      "final_token_id": 8254,
+      "final_token": "]:",
+      "n": 420
+    },
+    {
+      "condition": "moderator_next",
+      "final_token_id": 8254,
+      "final_token": "]:",
+      "n": 420
+    },
+    {
+      "condition": "user_next",
+      "final_token_id": 8254,
+      "final_token": "]:",
+      "n": 420
+    }
+  ]
+}

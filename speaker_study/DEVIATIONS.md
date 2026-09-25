@@ -50,3 +50,13 @@ Append-only log. Each entry is dated and says which phase it concerns.
 27. **D3: Llama 3.1 8B and Gemma 2 9B base are preregistered as Phase 5 replications** (layers 12 and 12, truncated, bf16, T4). Each needs a Phase 1 pass and Phase 2 token checks before Phase 3.
 28. **Preregistration frozen.** `PREREGISTRATION_DRAFT.md` was renamed to `PREREGISTRATION.md` after section 9 was updated with the final SHA-256 hashes. `04_analyze.py` changed after the draft (co-primary `combine()`, figure layout fixes), and `simulate_validation.py` changed to record co-primary verdicts. Both hashes were updated at freeze. The earlier simulation output `validation/simulation_qwen_sigma0.3.json` is kept unchanged.
 29. **Phase 3 notebook integrity check.** `notebooks/phase3_run_and_analyze.ipynb` verifies that the embedded scripts and the rebuilt `stimuli.jsonl` match the frozen hashes before any forward pass. The check normalizes the trailing newline that `%%writefile` drops; every frozen script ends in exactly one newline, so the check is equivalent to hashing the committed file. The whole notebook was run locally in IPython with the Colab-only cells and model forward passes stubbed out.
+
+## 2026-09-25, Phase 3 and 4 (Qwen primary, Gemma secondary)
+
+30. **Phase 3 ran as preregistered.** It used the notebook `phase3_run_and_analyze.ipynb` on a free T4, and the integrity checks passed. Runs: Qwen `phase3_20260925_154846_TeslaT4` (analysis `analysis_20260925_160425`) and Gemma `phase3_20260925_160450_TeslaT4` (analysis `analysis_20260925_161336`). Assistant-next pool statistics were bit-identical to Phase 1, and all 1,260 stimuli per model ended on `]:`. There were no deviations from the frozen scripts or settings.
+31. **Analyses outside the preregistration are labeled as such in REPORT.md:**
+    - the category-heterogeneity estimate (τ ≈ 0.22 Qwen, 0.24 Gemma; method of moments on category means of d);
+    - reading the CIs against the strong-H-speaker prediction (I ≈ 2 × the baseline harm-suffering gap);
+    - the per-group levels table and the comparison of label effects on cosine vs norm.
+
+    None of these changes a preregistered verdict.
