@@ -84,6 +84,31 @@ These checks are exploratory, from `tools/explore_d1_sensitivity.py` (see DEVIAT
   - the preserved group ordering;
   - the label main effect.
 
+## Layer sweep *(exploratory, interim: Gemma 2 2B only, Qwen pending)*
+
+> **This qualifies the conclusions above.** They hold at the preregistered readout, the 4.1 steering layer. They do not hold at later layers in Gemma.
+
+A reviewer pointed out that §3.3's first- vs third-person result comes from the extraction layer (Gemma 23, Qwen 24), not the steering layer. The plan for this sweep (DEVIATIONS 34–35) was committed before any sweep data existed.
+
+**Method.** S1 and S2 were rebuilt at every layer with the paper's recipe, and match the shipped vectors at cosine 0.9999. The sweep reproduces Phase 3 exactly at layer 7 and the paper's §3.3 z-scores at layer 23.
+
+**Pre-specified focal test** (layer 23, the paper's own `pain_vectors.pt`): I = **+0.84** [+0.43, +1.26]. The exact category-level p = .0002 is the smallest attainable. That is **1.14 ×** the strong-H-speaker prediction, i.e. a full crossover.
+
+| Gemma, layer 23 | `[Assistant]:` next | `[User]:` next | `[Moderator]:` next |
+|---|---|---|---|
+| harm to model | **+0.10** | +0.52 | +0.57 |
+| neutral | +0.06 | +0.70 | +0.51 |
+| user suffering | −0.27 | **+0.99** | +0.51 |
+
+- **The pattern is H-speaker's.** At this layer the pain signal follows the voice about to speak: harm to the model is highest when the Assistant is cued, user suffering is highest when the User is cued, and the three groups are equal when a third party is cued. S1 and S2 each show it (p = .0002), and all five suffering categories rise more than the harm categories.
+- **Across layers** (descriptive): I ≈ 0 in layers 0–7, including the preregistered layer 7. It rises from layer 8 to about 1.0–1.4 z in layers 12–21. The §3.3 first- vs third-person gap is present at every layer, from layer 0 on.
+- **Figure:** `results/Gemma_2_2B_base/layersweep_20260926_023728_TeslaT4/analysis/fig_layer_sweep.png`.
+
+**Caveats:**
+- Gemma 2B is the secondary model, and the Qwen sweep has not run yet.
+- `[User]:` next is also "the sufferer continues their own account". The flat `[Moderator]:` pattern fits H-speaker, but it does not rule out a continuation reading.
+- The layer-23 representation sits close to the output, and may encode the predicted emotional content of the next turn. For a model that predicts text, that is arguably what "the pain of the voice about to speak" amounts to.
+
 ## Secondary results (descriptive, no multiplicity correction)
 
 - **Gemma 2 2B (secondary model): parallel lines.**

@@ -100,3 +100,17 @@ Append-only log. Each entry is dated and says which phase it concerns.
     - **Qwen truncated to blocks 0–24** (`--max-layer 24`, also enforced to be ≥ the extraction layer). Blocks 25–27 and the LM head are never loaded, so the Qwen sweep covers layers 0–24 rather than the full depth planned in entry 35. The extraction layer (24) is included. Truncation does not change the readout at any loaded block (shown exactly in Phase 1). Memory: 6.37B parameters, ≈ 11.9 GiB bf16, against ≈ 14.5 GiB usable on a T4.
     - **Gemma** keeps all 26 blocks. If an earlier complete Gemma sweep made with the old loader is reused, its recorded placement is checked when the files arrive: a 2B model fits entirely on the GPU, so the computation is the same either way.
     - **Local tests** used Qwen- and Gemma-shaped random models with the real layer counts and vector files. They covered: 25 blocks loaded (0–24), the no-GPU error, the "tensors landed on CPU" error (triggered by faking a GPU and forcing a CPU load), the `--max-layer` below-extraction error, the analysis on 25 layers, and the notebooks' reuse, run and bundle logic in IPython.
+
+## 2026-09-26, Gemma layer sweep: salvaged files accepted and analysed (exploratory)
+
+38. **Salvaged Gemma sweep files accepted.** The files come from the combined notebook's run `layersweep_20260926_023728_TeslaT4`, which completed its Gemma step before the session crashed on Qwen, and the user recovered them from Drive. They were made with the sweep script as committed before any data (`4f9ea1c`, old loader). Checks:
+    - **Completeness.** `run_info.json` is present (it is written last). stimuli_proj.csv has all 32,760 rows (420 × 3 × 26 layers) and sentence_proj.csv all 20,800. There are no missing values, and the vectors are 26 × 2304 unit vectors.
+    - **Environment.** env.txt is identical to Phases 1–3.
+    - **Validation.** The rebuilt vectors match the shipped ones at cosine 0.9999 at layers 7 and 23. §3.3 pain z-scores at layer 23 reproduce the shipped `z_scores.csv` (e.g. S2_1P 0.8018 vs 0.8018; S2_3P 0.143 vs 0.146).
+    - **Placement.** At layer 7, the shipped-vector projections equal the Phase 3 GPU run *exactly* (max |diff| 0.0; I identical). So the computation ran on the GPU even though the old loader recorded an empty `device_map`.
+
+    `06_analyze_layer_sweep.py` ran unchanged from its pre-data commit.
+39. **Gemma result (exploratory; Qwen pending).** The pre-specified focal test, at extraction layer 23 with the shipped `pain_vectors.pt`: I = +0.84, 95% Welch CI [+0.43, +1.26]. The exact category-level p = .0002 is the smallest attainable (1/4368). That is 1.14 × the strong-H-speaker prediction (2 × baseline gap 0.37), i.e. a full crossover. Δ_harm = −0.23 and Δ_suffer = +0.62. S1 and S2 each show it separately (p = .0002 each), and every user-suffering category rises more than the harm categories' mean. Under `[Moderator]:`, the three groups are equal (+0.57 / +0.51 / +0.51).
+    - Descriptively (no significance claims across layers), I ≈ 0 in layers 0–7, including the steering layer 7 where the preregistered test was run. It rises from layer 8 and is about 1.0–1.4 z in layers 12–21.
+    - The §3.3 first- vs third-person gap is present at all layers (0.3–1.0 z), so it does not emerge late.
+    - **Consequence.** The REPORT and summary-PDF statement that "pure H-speaker is refuted" holds only at the preregistered readout layer. REPORT.md now has an interim section, and the PDF should not be sent until it is revised after the Qwen sweep.
