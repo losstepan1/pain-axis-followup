@@ -124,3 +124,10 @@ Append-only log. Each entry is dated and says which phase it concerns.
     - **Summary PDF superseded.** `summary/pain_axis_speaker_study_summary.pdf` (steering-layer results only) must not be sent as is. A revised version will cover both readouts.
 
 41. **Summary note revised** (2026-09-26): `summary/pain_axis_speaker_study_summary_v2.pdf`, built by `tools/build_summary_pdf_v2.py`, supersedes the 25 September version. It leads with the layer dependence: the preregistered steering-layer result, then the exploratory sweep with both models (a two-model figure of I by layer). The sweep is labelled exploratory throughout. All numbers were re-checked against results/. One correction, made while drafting: before the onset, I is small and inconsistent in sign (|I| ≤ 0.4), not "≈ 0" as earlier chat summaries put it.
+
+42. **Summary note v3** (2026-09-26, `summary/pain_axis_speaker_study_summary_v3.pdf`, `tools/build_summary_pdf_v3.py`; supersedes v2). User-requested changes:
+    - Byline "Štěpán Los and Claude (Anthropic)". The methods note names Štěpán Los as the person who made or approved each design decision.
+    - One fixed pair of terms throughout, defined in §1: *harm* = harm to the Assistant (the paper's "harm directed at the model"), *suffering* = suffering of the user. Tables and text no longer mix "harm to the model", "Assistant-directed harm", etc.
+    - "Item" (one transcript) and "category" (one of 21 transcript types) and the two levels of inference are explained in §1, with a reminder at the start of §3 that all p-values and CIs there are category-level.
+
+    Numbers and conclusions are unchanged from v2.
