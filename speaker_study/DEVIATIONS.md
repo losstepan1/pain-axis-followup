@@ -146,3 +146,11 @@ Append-only log. Each entry is dated and says which phase it concerns.
     - **§4 bullet reworded.** "H-speaker describes the user's side" becomes "the voice-dependence H-speaker predicts appears for the suffering of the user, not for harm to the Assistant". The Gemma nuance is added: harm shrinks when the user is cued (+0.93 → +0.30) but not under a third party (+0.57). The bullet notes that this favours the self-directed reading on the Assistant's side.
 
     No numbers changed. REPORT.md was updated with the same nuance.
+
+45. **Summary note v6** (2026-09-26, `summary/pain_axis_speaker_study_summary_v6.pdf`, `tools/build_summary_pdf_v6.py`; supersedes v5). Final review edits relayed by the user, with post hoc checks in `results/exploratory/sweep_followups_20260926_035443/v6_checks.json`:
+    - **Summary.** "Erased" now applies to the window averages. At Gemma's focal layer the asymmetry is reversed in the point estimates, but the level difference is not significant (harm − suffering with the user cued −0.47 [−1.73, +0.78], p = .20). "Harm stays elevated whoever is cued" becomes "with a third party cued", with the Qwen tokenization caveat.
+    - **§4.** "The self-directed reading holds" becomes "the ordering survives, so it is not a turn-taking artefact at this layer", adding that this is not confirmatory (the verdict was discordant) and that a content account predicts the same. "Favours the self-directed reading" becomes "over H-speaker", adding that the content account predicts the same.
+    - **Gemma nuance, tested directly.** The difference in harm's elevation between Moderator and User cues over the Gemma window is +0.27, Welch 95% CI [−0.03, +0.57], exact p = .009. The methods disagree, so the note says "tentatively".
+    - **Gemma's baseline gap at the §4.1 layer.** +0.69, Welch CI [−0.23, +1.61] (includes zero), exact p = .028. It is not clearly established at the category level, which limits what Gemma can say about explaining the asymmetry. This is stated in §3.
+
+    REPORT.md was updated to match.

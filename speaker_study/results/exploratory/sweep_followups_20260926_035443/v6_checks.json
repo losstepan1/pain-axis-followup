@@ -1,0 +1,19 @@
+{
+  "EXPLORATORY": "post hoc checks for the v6 note (DEVIATIONS 45)",
+  "gemma_window_harm_elev_M_minus_U": {
+    "est": 0.2701198984299277,
+    "ci95": [
+      -0.025681235908800837,
+      0.5659210327686561
+    ],
+    "p_exact": 0.0086996336996337
+  },
+  "gemma_L23_user_harm_minus_suffer": {
+    "est": -0.4729702427700443,
+    "ci95": [
+      -1.7279607314126597,
+      0.7820202458725712
+    ],
+    "p_exact": 0.19688644688644688
+  }
+}
