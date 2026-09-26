@@ -139,3 +139,10 @@ Append-only log. Each entry is dated and says which phase it concerns.
     - **Wording.** "The axis ignores who speaks next" becomes "the ordering is unaffected", with a small speaker component (≤ ≈ 0.5 z) not excluded. "How close to voicing" becomes "whether cued to speak next". "The direction as such" becomes "the steering-layer readout, not the model's pain representations in general".
     - **Restored caveats:** the Qwen `[Moderator]:` tokenization confound, and the single-token readout position. **Added:** the probe-construction point, and state attribution vs content prediction as an open question.
     - REPORT.md findings and the summary note (v4, `tools/build_summary_pdf_v4.py`) are revised accordingly. v3 is superseded.
+
+44. **Summary note v5** (2026-09-26, `summary/pain_axis_speaker_study_summary_v5.pdf`, `tools/build_summary_pdf_v5.py`; supersedes v4). Three edits agreed with the user:
+    - **Summary box rebalanced.** It now leads with the robust part: from mid-depth the axis reliably tracks whether the sufferer (the user) is the next voice; CIs are above zero at every post-onset layer in both models; Gemma's focal I = +0.84, p = .0002. It then states that harm to the Assistant stays elevated whoever is cued.
+    - **Dashed-line caption.** It explains that the dashed line is recomputed from each layer's baseline gap, not an advance prediction. Early dips (Gemma layer 4, gap 0.28) mark little baseline asymmetry and less reliable vectors (AUC 0.86 vs ≥ 0.93 from layer 7).
+    - **§4 bullet reworded.** "H-speaker describes the user's side" becomes "the voice-dependence H-speaker predicts appears for the suffering of the user, not for harm to the Assistant". The Gemma nuance is added: harm shrinks when the user is cued (+0.93 → +0.30) but not under a third party (+0.57). The bullet notes that this favours the self-directed reading on the Assistant's side.
+
+    No numbers changed. REPORT.md was updated with the same nuance.
