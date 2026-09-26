@@ -12,8 +12,10 @@ For one model, at EVERY decoder block:
      also onto the shipped vectors.
 
 Readout convention as in Phases 1-3: forward hook on decoder block L = hidden_states[L+1].
-The model is loaded without its LM head (AutoModel), with device_map="auto" so that a
-7B model fits a 16 GB T4 (layers that do not fit are offloaded to CPU by accelerate).
+Loading (DEVIATIONS.md, entry 36): the model is built without its LM head (AutoModel), with
+only blocks 0..--max-layer, and its weights are loaded straight onto the GPU
+(device_map={"": 0}; no CPU offload, no full copy in CPU RAM). If any parameter or buffer
+is not on the GPU afterwards, the script stops with an error. No quantization.
 
 Outputs (new folder, never overwritten) <out-root>/results/<model>/layersweep_<run-id>/:
   stimuli_proj.csv   scenario x condition x layer: proj_S1, proj_S2, act_norm (+ shipped)
@@ -60,18 +62,37 @@ def unit(v):
     return v / (np.linalg.norm(v) + 1e-12)
 
 
-def load_full(repo, dtype, max_gpu_gib):
+def load_for_sweep(repo, dtype, max_layer=None, allow_cpu=False):
+    """Load the base model (no LM head) with blocks 0..max_layer, weights straight to the GPU."""
     import transformers
-    from transformers import AutoModel, AutoTokenizer
+    from transformers import AutoConfig, AutoModel, AutoTokenizer
+    on_gpu = torch.cuda.is_available()
+    if not on_gpu and not allow_cpu:
+        raise SystemExit("ERROR: no CUDA GPU visible. Set Runtime -> Change runtime type -> T4 GPU, then rerun.")
     tok = AutoTokenizer.from_pretrained(repo)
-    kw = {"low_cpu_mem_usage": True}
-    if torch.cuda.is_available():
-        kw.update(device_map="auto", max_memory={0: f"{max_gpu_gib}GiB", "cpu": "48GiB"})
+    cfg = AutoConfig.from_pretrained(repo)
+    if max_layer is not None:
+        if not 0 <= max_layer < cfg.num_hidden_layers:
+            raise SystemExit(f"ERROR: --max-layer {max_layer} outside 0..{cfg.num_hidden_layers - 1}")
+        cfg.num_hidden_layers = max_layer + 1
+        if isinstance(getattr(cfg, "layer_types", None), list):
+            cfg.layer_types = cfg.layer_types[: max_layer + 1]
+    kw = {"config": cfg, "low_cpu_mem_usage": True}
+    if on_gpu:
+        kw["device_map"] = {"": 0}  # every weight straight to cuda:0; nothing offloaded
     major, minor = (int(x) for x in transformers.__version__.split(".")[:2])
     kw["dtype" if (major, minor) >= (4, 56) else "torch_dtype"] = pc.DTYPES[dtype]
     model = AutoModel.from_pretrained(repo, **kw)
     model.eval()
-    return tok, model
+    devices = sorted({str(t.device) for t in list(model.parameters()) + list(model.buffers())})
+    if on_gpu and any(not d.startswith("cuda") for d in devices):
+        raise SystemExit(f"ERROR: model tensors landed on {devices}, not only on the GPU. Stopping: a CPU-resident "
+                         "model would be too slow and can exhaust Colab RAM. Restart the runtime (Runtime -> "
+                         "Disconnect and delete runtime) and run again; if it repeats, tell Claude.")
+    dt = {str(t.dtype) for t in model.parameters()}
+    if dt != {str(pc.DTYPES[dtype])}:
+        raise SystemExit(f"ERROR: parameter dtypes {dt}, expected {pc.DTYPES[dtype]}")
+    return tok, model, devices
 
 
 class AllLayerReader:
@@ -82,7 +103,7 @@ class AllLayerReader:
         self.acts = [None] * len(self.layers)
         self.handles = [layer.register_forward_hook(self._hook(i)) for i, layer in enumerate(self.layers)]
         self.model = model
-        self.device = next(model.parameters()).device if not torch.cuda.is_available() else torch.device("cuda:0")
+        self.device = next(model.parameters()).device
 
     def _hook(self, i):
         def f(module, inputs, output):
@@ -103,7 +124,8 @@ def main():
     ap.add_argument("--out-root", required=True)
     ap.add_argument("--model-repo", default="Qwen/Qwen2.5-7B", choices=sorted(pc.MODELS))
     ap.add_argument("--dtype", default="bf16", choices=sorted(pc.DTYPES))
-    ap.add_argument("--max-gpu-gib", type=float, default=13.5)
+    ap.add_argument("--max-layer", type=int, default=None, help="last decoder block to load and analyse (default: all)")
+    ap.add_argument("--allow-cpu", action="store_true", help="local testing only")
     ap.add_argument("--run-id", default=None)
     args = ap.parse_args()
 
@@ -115,8 +137,6 @@ def main():
     out = Path(args.out_root) / "results" / name / f"layersweep_{run_id}"
     if out.exists():
         raise SystemExit(f"{out} exists; refusing to overwrite")
-    out.mkdir(parents=True)
-    pc.pip_freeze(out / "env.txt")
 
     pa = Path(args.pain_axis_dir)
     steer_layer, shipped_steer = pc.load_vectors(pa, name)
@@ -126,11 +146,20 @@ def main():
     shipped = {steer_layer: {"S1": shipped_steer["s1_pain_vector"], "S2": shipped_steer["s2_pain_vector"]},
                extr_layer: {"S1": unit(pv["s1_pain_vector"].numpy()), "S2": unit(pv["s2_pain_vector"].numpy())}}
 
-    tok, model = load_full(args.model_repo, args.dtype, args.max_gpu_gib)
+    if args.max_layer is not None and args.max_layer < extr_layer:
+        raise SystemExit(f"ERROR: --max-layer {args.max_layer} is below the extraction layer {extr_layer}")
+    tok, model, devices = load_for_sweep(args.model_repo, args.dtype, args.max_layer, args.allow_cpu)
     reader = AllLayerReader(model)
     n_layers = len(reader.layers)
-    print(f"{name}: {n_layers} blocks; steering layer {steer_layer}, extraction layer {extr_layer}; "
-          f"device map: {sorted(set(map(str, getattr(model, 'hf_device_map', {'all': 'cpu'}).values())))}")
+    gpu_mem = None
+    if torch.cuda.is_available():
+        free, total = torch.cuda.mem_get_info()
+        gpu_mem = {"allocated_gib": round(torch.cuda.memory_allocated() / 2**30, 2),
+                   "free_gib": round(free / 2**30, 2), "total_gib": round(total / 2**30, 2)}
+    print(f"{name}: {n_layers} blocks loaded (0..{n_layers - 1}); steering layer {steer_layer}, extraction layer "
+          f"{extr_layer}; tensors on {devices}; GPU memory {gpu_mem}")
+    out.mkdir(parents=True)  # only after a successful GPU load
+    pc.pip_freeze(out / "env.txt")
 
     # ---- 1. sentences and rebuilt vectors -------------------------------------------
     data = json.load(open(pa / "datasets" / "3.1_pain_and_control_datasets.json"))["datasets"]
@@ -196,7 +225,7 @@ def main():
 
     info = {"EXPLORATORY": True, "model": name, "model_repo": args.model_repo, "run_id": run_id, "n_layers": n_layers,
             "steering_layer": steer_layer, "extraction_layer": extr_layer, "dtype": args.dtype, "env": env,
-            "device_map": {k: str(v) for k, v in getattr(model, "hf_device_map", {}).items()},
+            "max_layer": args.max_layer, "blocks_loaded": n_layers, "tensor_devices": devices, "gpu_memory": gpu_mem,
             "pain_axis_commit": pc.git_head(pa), "bos_variants": list(variants), "chosen_variant": chosen,
             "cosine_with_shipped": cosines, "in_sample_auc_S2_1P": auc}
     (out / "run_info.json").write_text(json.dumps(info, indent=2))

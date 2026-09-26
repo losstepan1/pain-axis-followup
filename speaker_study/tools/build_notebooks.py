@@ -236,25 +236,35 @@ files.download(zip_path)
 MODEL_NAMES = {"Qwen/Qwen2.5-7B": "Qwen_2.5_7B_base", "google/gemma-2-2b": "Gemma_2_2B_base"}
 
 
-def layer_sweep():
+SWEEP = {  # per-model settings for the exploratory layer sweep (DEVIATIONS.md, entries 34-37)
+    "gemma": {"repo": "google/gemma-2-2b", "name": "Gemma_2_2B_base", "max_layer": None, "title": "Gemma 2 2B base",
+              "blocks": "all 26 blocks", "time": "about 10-15 min", "reuse_existing": True},
+    "qwen": {"repo": "Qwen/Qwen2.5-7B", "name": "Qwen_2.5_7B_base", "max_layer": 24, "title": "Qwen 2.5 7B base",
+             "blocks": "blocks 0-24 only (the extraction layer is 24; blocks 25-27 and the LM head are never loaded)",
+             "time": "about 25-40 min, mostly the ~15 GB download", "reuse_existing": False},
+}
+
+
+def layer_sweep(key):
+    c = SWEEP[key]
     stim_sha = _sha(ROOT / "stimuli" / "stimuli.jsonl")
-    run = lambda repo: f"""
-%cd /content/speaker_study_scripts
-!python 05_layer_sweep.py --pain-axis-dir /content/Pain-axis --stimuli "{{OUT_ROOT}}/stimuli/stimuli.jsonl" --out-root "{{OUT_ROOT}}" --model-repo {repo} --dtype bf16
-"""
-    return [
-        md("""
-# Speaker study: EXPLORATORY layer sweep (Gemma 2 2B, Qwen 2.5 7B)
+    max_arg = f" --max-layer {c['max_layer']}" if c["max_layer"] is not None else ""
+    zip_name = f"speaker_study_layersweep_{key}.zip"
+    cells = [
+        md(f"""
+# Speaker study: EXPLORATORY layer sweep, {c['title']} only
 
-Not preregistered; the plan was logged in `DEVIATIONS.md` (entries 34-35) before this ran. For every decoder
-block it rebuilds the paper's S1/S2 pain vectors from the §3.1 sentences and projects all 1,260 stimuli onto
-them, so the speaker-swap interaction can be read at every depth, including the extraction layer where §3.3's
-first- vs third-person result lives. Forward passes only; no generation.
+Not preregistered; plan in `DEVIATIONS.md` (entries 34-35), loading changes in entries 36-37. For every
+decoder block loaded ({c['blocks']}) it rebuilds the paper's S1/S2 pain vectors from the §3.1 sentences and
+projects all 1,260 stimuli onto them. Forward passes only.
 
-**How to run:** T4 GPU runtime, then Runtime -> Run all. About 30-45 min (Gemma ~10 min, then Qwen, which
-reuses the cached download from Phase 3 if the runtime still has it; otherwise ~15 GB again). Qwen is loaded
-without its LM head and may offload a layer to CPU; that is expected. The last cell downloads
-`speaker_study_layersweep.zip` (also saved to `MyDrive/speaker_study/`); attach it in the Claude session.
+**Loading:** weights go straight onto the GPU (`device_map={{"": 0}}`), without the LM head and without a
+full copy in CPU RAM; no offloading and no quantization. If any weight is not on the GPU after loading, the
+run stops with an `ERROR:` line instead of continuing slowly on the CPU.
+
+**How to run:** start from a fresh runtime (Runtime -> Disconnect and delete runtime), select a T4 GPU,
+then Runtime -> Run all. {c['time']}. The last cell downloads `{zip_name}` (also saved to
+`MyDrive/speaker_study/`); attach it in the Claude session.
 """),
         *SETUP,
         writefile("pa_common.py"),
@@ -269,25 +279,53 @@ got = hashlib.sha256(open(f"{{OUT_ROOT}}/stimuli/stimuli.jsonl", "rb").read()).h
 assert got == "{stim_sha}", "stimuli.jsonl hash mismatch; do not run, tell Claude"
 print("ok stimuli.jsonl", got[:12])
 """),
-        code("# Layer sweep: Gemma 2 2B base (26 layers)\n" + run("google/gemma-2-2b").strip("\n")),
-        code("# Layer sweep: Qwen 2.5 7B base (28 layers)\n" + run("Qwen/Qwen2.5-7B").strip("\n")),
         code("""
-# Bundle the latest sweep of each model for Claude.
+# GPU pre-flight: the whole model must fit on this GPU.
+import torch
+assert torch.cuda.is_available(), "ERROR: no GPU. Runtime -> Change runtime type -> T4 GPU."
+free, total = torch.cuda.mem_get_info()
+print(f"GPU: {torch.cuda.get_device_name(0)}, free {free / 2**30:.1f} of {total / 2**30:.1f} GiB")
+assert free / 2**30 > 13.0, "ERROR: less than 13 GiB free on the GPU. Restart the runtime and run again."
+"""),
+    ]
+    if c["reuse_existing"]:
+        cells.append(code(f"""
+# Reuse a complete Gemma sweep from an earlier run if one is on Drive (run_info.json is written last).
+import glob, json, os
+done = [d for d in sorted(glob.glob(f"{{OUT_ROOT}}/results/{c['name']}/layersweep_*"))
+        if os.path.exists(f"{{d}}/run_info.json") and os.path.exists(f"{{d}}/stimuli_proj.csv")]
+REUSE = done[-1] if done else None
+if REUSE:
+    info = json.load(open(f"{{REUSE}}/run_info.json"))
+    print("Found a complete sweep; it will be reused, not rerun:", REUSE)
+    print("blocks:", info.get("n_layers"), "| devices:", info.get("tensor_devices", info.get("device_map")))
+else:
+    print("No complete Gemma sweep on Drive; running it now.")
+"""))
+        run_cell = f"""# Layer sweep: {c['title']} (skipped if a complete run was found above)
+%cd /content/speaker_study_scripts
+if not REUSE:
+    !python 05_layer_sweep.py --pain-axis-dir /content/Pain-axis --stimuli "{{OUT_ROOT}}/stimuli/stimuli.jsonl" --out-root "{{OUT_ROOT}}" --model-repo {c['repo']} --dtype bf16{max_arg}"""
+    else:
+        run_cell = f"""# Layer sweep: {c['title']}, {c['blocks']}
+%cd /content/speaker_study_scripts
+!python 05_layer_sweep.py --pain-axis-dir /content/Pain-axis --stimuli "{{OUT_ROOT}}/stimuli/stimuli.jsonl" --out-root "{{OUT_ROOT}}" --model-repo {c['repo']} --dtype bf16{max_arg}"""
+    cells.append(code(run_cell))
+    cells.append(code(f"""
+# Bundle the latest complete sweep for Claude.
 import glob, os, zipfile
-paths = []
-for model in ["Gemma_2_2B_base", "Qwen_2.5_7B_base"]:
-    runs = sorted(glob.glob(f"{OUT_ROOT}/results/{model}/layersweep_*"))
-    if runs:
-        paths += [p for p in glob.glob(runs[-1] + "/*") if os.path.isfile(p)]
-zip_path = f"{OUT_ROOT}/speaker_study_layersweep.zip"
+runs = [d for d in sorted(glob.glob(f"{{OUT_ROOT}}/results/{c['name']}/layersweep_*")) if os.path.exists(f"{{d}}/run_info.json")]
+assert runs, "ERROR: no complete sweep folder found (run_info.json missing); see the output of the cell above."
+paths = [p for p in glob.glob(runs[-1] + "/*") if os.path.isfile(p)]
+zip_path = f"{{OUT_ROOT}}/{zip_name}"
 with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
     for p in paths:
         z.write(p, os.path.relpath(p, OUT_ROOT))
 print("\\n".join(os.path.relpath(p, OUT_ROOT) for p in paths))
 from google.colab import files
 files.download(zip_path)
-"""),
-    ]
+"""))
+    return cells
 
 
 def write_nb(path, cells):
@@ -304,4 +342,5 @@ if __name__ == "__main__":
     write_nb(NB_DIR / "phase1_reproduce_gemma2b.ipynb", phase1())
     write_nb(NB_DIR / "phase1_qwen7b_phase2_tokens.ipynb", phase1_qwen_and_token_checks())
     write_nb(NB_DIR / "phase3_run_and_analyze.ipynb", phase3())
-    write_nb(NB_DIR / "exploratory_layer_sweep.ipynb", layer_sweep())
+    write_nb(NB_DIR / "exploratory_layer_sweep_gemma.ipynb", layer_sweep("gemma"))
+    write_nb(NB_DIR / "exploratory_layer_sweep_qwen.ipynb", layer_sweep("qwen"))
