@@ -114,3 +114,11 @@ Append-only log. Each entry is dated and says which phase it concerns.
     - Descriptively (no significance claims across layers), I ≈ 0 in layers 0–7, including the steering layer 7 where the preregistered test was run. It rises from layer 8 and is about 1.0–1.4 z in layers 12–21.
     - The §3.3 first- vs third-person gap is present at all layers (0.3–1.0 z), so it does not emerge late.
     - **Consequence.** The REPORT and summary-PDF statement that "pure H-speaker is refuted" holds only at the preregistered readout layer. REPORT.md now has an interim section, and the PDF should not be sent until it is revised after the Qwen sweep.
+
+## 2026-09-26, Qwen layer sweep (exploratory)
+
+40. **Qwen sweep** (`layersweep_20260926_030303_TeslaT4`, Qwen-only notebook, new loader). All tensors were on `cuda:0` (11.87 GiB allocated, 2.49 GiB free), 25 blocks (0–24). The run is complete (31,500 + 20,000 rows, no missing values) and env.txt is identical to Phases 1–3.
+    - **BOS variant.** No prefix was chosen: cosine with the shipped vectors 0.986–0.9999, vs 0.84–0.96 with an `<|endoftext|>` prefix. The paper's Qwen vectors were therefore built without a BOS token.
+    - **Validation.** Steering layer 8 reproduces Phase 3 exactly (0.0). §3.3 z-scores at layer 24 match the shipped values (S2_1P 0.827/0.827; S1_3P −0.188/−0.188).
+    - **Focal test** (layer 24, shipped vectors): I = +0.89 [+0.70, +1.08], p = .0002. However, the baseline gap at layer 24 is −0.40, so by the pre-specified reading rule the focal test is not interpretable as a test of H-speaker at that layer. At layers 10–20, where the gap is clearly positive, I is 0.4–1.4 z, i.e. 0.2–0.6 of the strong prediction, and 1.4–1.6 at layers 19–20. REPORT.md, section "Layer sweep", now covers both models.
+    - **Summary PDF superseded.** `summary/pain_axis_speaker_study_summary.pdf` (steering-layer results only) must not be sent as is. A revised version will cover both readouts.
